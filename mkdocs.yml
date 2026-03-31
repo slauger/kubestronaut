@@ -1,0 +1,153 @@
+site_name: Kubestronaut Study Guide
+site_url: https://slauger.github.io/kubestronaut
+site_author: Simon Lauger
+site_description: >-
+  Study guide and exam preparation resources for the
+  CNCF Kubestronaut certification path
+
+repo_name: slauger/kubestronaut
+repo_url: https://github.com/slauger/kubestronaut
+edit_uri: edit/main/docs/
+
+copyright: Copyright &copy; 2026 Simon Lauger
+
+theme:
+  name: material
+  language: en
+  features:
+    - navigation.instant
+    - navigation.instant.prefetch
+    - navigation.instant.progress
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.indexes
+    - navigation.top
+    - navigation.footer
+    - navigation.path
+    - search.suggest
+    - search.highlight
+    - search.share
+    - content.action.edit
+    - content.action.view
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+    - content.tooltips
+    - toc.follow
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  font:
+    text: Roboto
+    code: Roboto Mono
+  icon:
+    repo: fontawesome/brands/github
+    edit: material/pencil
+    view: material/eye
+
+plugins:
+  - search:
+      separator: '[\s\u200b\-_,:!=\[\]()"`/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
+  - minify:
+      minify_html: true
+  - glightbox
+  - tags
+
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - toc:
+      permalink: true
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+      slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+
+extra_css:
+  - stylesheets/extra.css
+
+nav:
+  - Home: index.md
+  - KCNA:
+    - kcna/index.md
+    - Kubernetes Fundamentals: kcna/kubernetes-fundamentals.md
+    - Container Orchestration: kcna/container-orchestration.md
+    - Cloud Native Architecture: kcna/cloud-native-architecture.md
+    - Cloud Native Delivery: kcna/cloud-native-delivery.md
+  - KCSA:
+    - kcsa/index.md
+    - Cloud Native Security: kcsa/cloud-native-security.md
+    - Cluster Component Security: kcsa/cluster-component-security.md
+    - Security Fundamentals: kcsa/security-fundamentals.md
+    - Threat Model: kcsa/threat-model.md
+    - Platform Security: kcsa/platform-security.md
+    - Compliance: kcsa/compliance.md
+  - CKA:
+    - cka/index.md
+    - Cluster Architecture: cka/cluster-architecture.md
+    - Workloads & Scheduling: cka/workloads-scheduling.md
+    - Services & Networking: cka/services-networking.md
+    - Storage: cka/storage.md
+    - Troubleshooting: cka/troubleshooting.md
+  - CKAD:
+    - ckad/index.md
+    - Application Design & Build: ckad/application-design.md
+    - Application Deployment: ckad/application-deployment.md
+    - Application Environment: ckad/application-environment.md
+    - Services & Networking: ckad/services-networking.md
+    - Observability & Maintenance: ckad/observability.md
+  - CKS:
+    - cks/index.md
+    - Cluster Setup: cks/cluster-setup.md
+    - Cluster Hardening: cks/cluster-hardening.md
+    - System Hardening: cks/system-hardening.md
+    - Minimize Microservice Vulnerabilities: cks/microservice-vulnerabilities.md
+    - Supply Chain Security: cks/supply-chain-security.md
+    - Monitoring, Logging & Runtime Security: cks/monitoring-logging-runtime.md
+  - Resources: resources/index.md
+  - Quiz: quiz/index.html

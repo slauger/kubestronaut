@@ -1,0 +1,452 @@
+[
+  {
+    "id": 1,
+    "category": "Overview of Cloud Native Security",
+    "question": "The '4Cs' of Cloud Native Security represent four layers of defense in depth. Which of the following correctly lists all four layers?",
+    "answers": [
+      "Cloud, Cluster, Container, Code",
+      "Cloud, Compute, Container, Code",
+      "Cloud, Cluster, CI/CD, Code",
+      "Cloud, Cluster, Container, Compliance"
+    ],
+    "correct": 0,
+    "explanation": "The 4Cs of Cloud Native Security are Cloud, Cluster, Container, and Code. Each layer builds upon the security of the previous one, forming a defense-in-depth approach. If the outer layers (e.g., Cloud) are insecure, security at inner layers cannot compensate.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/security/overview/"
+  },
+  {
+    "id": 2,
+    "category": "Overview of Cloud Native Security",
+    "question": "Which security principle assumes that no entity inside or outside the network should be automatically trusted, and every access request must be verified?",
+    "answers": [
+      "Principle of Least Privilege",
+      "Defense in Depth",
+      "Zero Trust",
+      "Separation of Duties"
+    ],
+    "correct": 2,
+    "explanation": "Zero Trust is the security model that assumes no implicit trust for any entity, regardless of location inside or outside the network perimeter. Every request must be authenticated, authorized, and encrypted before being granted access.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/security/overview/"
+  },
+  {
+    "id": 3,
+    "category": "Overview of Cloud Native Security",
+    "question": "In the Cloud Native Security model, at which layer would you implement network firewalls and IAM policies for your cloud provider?",
+    "answers": [
+      "Code",
+      "Container",
+      "Cluster",
+      "Cloud"
+    ],
+    "correct": 3,
+    "explanation": "The Cloud layer is the outermost of the 4Cs and encompasses the underlying infrastructure security. Cloud provider IAM policies, network firewalls, VPC configurations, and encryption at rest are all implemented at this layer.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/security/overview/"
+  },
+  {
+    "id": 4,
+    "category": "Overview of Cloud Native Security",
+    "question": "Which of the following are considered valid defense-in-depth strategies in cloud native environments? (Select all that apply)",
+    "answers": [
+      "Applying NetworkPolicies to restrict pod-to-pod communication",
+      "Running all containers as root to simplify access management",
+      "Enabling audit logging at the API server level",
+      "Scanning container images for known vulnerabilities before deployment"
+    ],
+    "correct": [0, 2, 3],
+    "explanation": "Defense in depth involves applying multiple security controls at different layers. NetworkPolicies restrict network traffic, audit logging provides visibility into API requests, and image scanning catches vulnerabilities before deployment. Running containers as root is a security anti-pattern that violates the principle of least privilege.",
+    "multiple_choice": true,
+    "reference": "https://kubernetes.io/docs/concepts/security/overview/"
+  },
+  {
+    "id": 5,
+    "category": "Kubernetes Cluster Component Security",
+    "question": "Which Kubernetes component stores all cluster state and configuration data, and should be encrypted at rest?",
+    "answers": [
+      "kube-apiserver",
+      "kube-scheduler",
+      "etcd",
+      "kube-controller-manager"
+    ],
+    "correct": 2,
+    "explanation": "etcd is the distributed key-value store that holds all Kubernetes cluster state and configuration. Since it contains sensitive information including Secrets, it is critical to encrypt etcd data at rest and restrict access to the etcd cluster.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/tasks/administer-cluster/encrypt-data/"
+  },
+  {
+    "id": 6,
+    "category": "Kubernetes Cluster Component Security",
+    "question": "What is the recommended way to authenticate to the Kubernetes API server for production workloads?",
+    "answers": [
+      "Static token files",
+      "Basic authentication with username and password",
+      "X.509 client certificates or OIDC tokens",
+      "Anonymous authentication"
+    ],
+    "correct": 2,
+    "explanation": "X.509 client certificates and OIDC (OpenID Connect) tokens are recommended for production environments. Static token files and basic authentication are considered insecure because credentials are stored in plaintext. Anonymous authentication should be disabled or severely restricted in production.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/reference/access-authn-authz/authentication/"
+  },
+  {
+    "id": 7,
+    "category": "Kubernetes Cluster Component Security",
+    "question": "Which flag should be set on the kubelet to prevent anonymous requests from being accepted?",
+    "answers": [
+      "--authorization-mode=RBAC",
+      "--anonymous-auth=false",
+      "--enable-admission-plugins=NodeRestriction",
+      "--tls-cert-file=/path/to/cert"
+    ],
+    "correct": 1,
+    "explanation": "Setting --anonymous-auth=false on the kubelet disables anonymous authentication, requiring all requests to be authenticated. By default, the kubelet allows anonymous requests, which is a security risk as it could allow unauthenticated access to kubelet APIs.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/reference/access-authn-authz/kubelet-authn-authz/"
+  },
+  {
+    "id": 8,
+    "category": "Kubernetes Cluster Component Security",
+    "question": "What is the purpose of the NodeRestriction admission controller in Kubernetes?",
+    "answers": [
+      "It restricts which nodes can join the cluster",
+      "It limits the kubelet to only modifying its own Node object and Pods bound to its node",
+      "It prevents nodes from running privileged containers",
+      "It enforces resource quotas on a per-node basis"
+    ],
+    "correct": 1,
+    "explanation": "The NodeRestriction admission controller limits a kubelet's ability to modify Node and Pod objects. A kubelet can only modify its own Node API object and Pod objects that are bound to its node. This prevents a compromised node from affecting other nodes' workloads.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/#noderestriction"
+  },
+  {
+    "id": 9,
+    "category": "Kubernetes Cluster Component Security",
+    "question": "Which of the following measures help secure communication between Kubernetes cluster components? (Select all that apply)",
+    "answers": [
+      "Enabling TLS for all component-to-component communication",
+      "Using self-signed certificates without a trusted CA",
+      "Configuring the API server with --etcd-certfile and --etcd-keyfile for mutual TLS to etcd",
+      "Rotating certificates periodically using kubeadm certs renew"
+    ],
+    "correct": [0, 2, 3],
+    "explanation": "Securing cluster communication requires TLS encryption between all components, mutual TLS between the API server and etcd using proper certificates, and regular certificate rotation. Using self-signed certificates without a trusted CA undermines the trust chain and is not a recommended security practice.",
+    "multiple_choice": true,
+    "reference": "https://kubernetes.io/docs/setup/best-practices/certificates/"
+  },
+  {
+    "id": 10,
+    "category": "Kubernetes Cluster Component Security",
+    "question": "What does the Kubernetes API server's --audit-policy-file flag enable?",
+    "answers": [
+      "Encryption of all API requests",
+      "Logging of API requests based on defined audit rules",
+      "Rate limiting of API requests",
+      "Automatic blocking of unauthorized API requests"
+    ],
+    "correct": 1,
+    "explanation": "The --audit-policy-file flag configures the API server to log requests based on audit rules defined in the policy file. Audit logging records who did what, when, and to which resources, providing crucial visibility for security monitoring and incident response.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/tasks/debug/debug-cluster/audit/"
+  },
+  {
+    "id": 11,
+    "category": "Kubernetes Cluster Component Security",
+    "question": "Which API server flag is used to configure encryption providers for encrypting Secret data at rest in etcd?",
+    "answers": [
+      "--etcd-encryption-key",
+      "--encryption-provider-config",
+      "--secret-encryption-key",
+      "--encrypt-secrets=true"
+    ],
+    "correct": 1,
+    "explanation": "The --encryption-provider-config flag points to an EncryptionConfiguration file that defines which resources should be encrypted and which encryption providers to use (such as aescbc, aesgcm, or secretbox). This ensures sensitive data stored in etcd is encrypted at rest.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/tasks/administer-cluster/encrypt-data/"
+  },
+  {
+    "id": 12,
+    "category": "Kubernetes Security Fundamentals",
+    "question": "In Kubernetes RBAC, what is the difference between a Role and a ClusterRole?",
+    "answers": [
+      "A Role can only grant read permissions while a ClusterRole can grant all permissions",
+      "A Role is namespace-scoped while a ClusterRole is cluster-scoped",
+      "A Role is for users while a ClusterRole is for service accounts",
+      "A Role is deprecated in favor of ClusterRole"
+    ],
+    "correct": 1,
+    "explanation": "A Role defines permissions within a specific namespace, while a ClusterRole defines permissions across the entire cluster or across all namespaces. ClusterRoles can also grant access to cluster-scoped resources like nodes and namespaces themselves.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/reference/access-authn-authz/rbac/"
+  },
+  {
+    "id": 13,
+    "category": "Kubernetes Security Fundamentals",
+    "question": "Which Pod Security Standard level prohibits running containers as root and requires dropping all capabilities?",
+    "answers": [
+      "Privileged",
+      "Baseline",
+      "Restricted",
+      "Enforced"
+    ],
+    "correct": 2,
+    "explanation": "The Restricted Pod Security Standard is the most restrictive policy, following current Pod hardening best practices. It requires containers to run as non-root, drop ALL capabilities, and sets other strict security constraints like disallowing privilege escalation and requiring a read-only root filesystem.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/security/pod-security-standards/"
+  },
+  {
+    "id": 14,
+    "category": "Kubernetes Security Fundamentals",
+    "question": "A NetworkPolicy with an empty podSelector {} in its spec applies to which pods?",
+    "answers": [
+      "No pods in the namespace",
+      "Only pods without any labels",
+      "All pods in the namespace",
+      "All pods in the cluster"
+    ],
+    "correct": 2,
+    "explanation": "An empty podSelector {} in a NetworkPolicy matches all pods in the namespace where the policy is created. This is commonly used to create default deny policies that block all ingress or egress traffic for an entire namespace.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/services-networking/network-policies/"
+  },
+  {
+    "id": 15,
+    "category": "Kubernetes Security Fundamentals",
+    "question": "Which of the following are recommended practices for securing Kubernetes Secrets? (Select all that apply)",
+    "answers": [
+      "Enable encryption at rest for Secrets in etcd",
+      "Rely on base64 encoding as sufficient protection for sensitive data",
+      "Use RBAC to restrict access to Secret resources to only the subjects that need them",
+      "Integrate an external secrets management solution such as HashiCorp Vault"
+    ],
+    "correct": [0, 2, 3],
+    "explanation": "Securing Kubernetes Secrets requires enabling encryption at rest in etcd, restricting access via RBAC, and optionally integrating external secrets management tools like HashiCorp Vault. Base64 encoding is not encryption and provides no confidentiality; it is merely a serialization format and should never be relied upon for protection.",
+    "multiple_choice": true,
+    "reference": "https://kubernetes.io/docs/concepts/configuration/secret/"
+  },
+  {
+    "id": 16,
+    "category": "Kubernetes Security Fundamentals",
+    "question": "What happens when automountServiceAccountToken is set to false on a ServiceAccount or Pod?",
+    "answers": [
+      "The pod cannot be scheduled",
+      "The ServiceAccount token is not automatically mounted into the pod's filesystem",
+      "The pod runs without any network access",
+      "The ServiceAccount is deleted when the pod terminates"
+    ],
+    "correct": 1,
+    "explanation": "Setting automountServiceAccountToken to false prevents Kubernetes from automatically mounting the ServiceAccount token into the pod at /var/run/secrets/kubernetes.io/serviceaccount. This is a security best practice for pods that do not need to communicate with the Kubernetes API.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/"
+  },
+  {
+    "id": 17,
+    "category": "Kubernetes Security Fundamentals",
+    "question": "Which securityContext field prevents a child process from gaining more privileges than its parent process?",
+    "answers": [
+      "readOnlyRootFilesystem",
+      "runAsNonRoot",
+      "allowPrivilegeEscalation",
+      "privileged"
+    ],
+    "correct": 2,
+    "explanation": "Setting allowPrivilegeEscalation to false in the container's securityContext prevents a process from gaining more privileges than its parent. This blocks setuid binaries and other mechanisms that could allow a process to escalate its privileges inside the container.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/tasks/configure-pod-container/security-context/"
+  },
+  {
+    "id": 18,
+    "category": "Kubernetes Security Fundamentals",
+    "question": "Which of the following are valid actions to harden Kubernetes RBAC? (Select all that apply)",
+    "answers": [
+      "Avoid using cluster-admin ClusterRoleBinding for regular users",
+      "Use wildcards (*) in resource and verb fields for convenience",
+      "Bind roles to specific ServiceAccounts rather than broad groups",
+      "Regularly audit RoleBindings and ClusterRoleBindings"
+    ],
+    "correct": [0, 2, 3],
+    "explanation": "Hardening RBAC involves avoiding overly broad permissions like cluster-admin for regular users, binding roles to specific identities, and regularly auditing bindings for unnecessary access. Using wildcards (*) in resource and verb fields is an anti-pattern as it grants overly broad permissions, violating the principle of least privilege.",
+    "multiple_choice": true,
+    "reference": "https://kubernetes.io/docs/reference/access-authn-authz/rbac/#role-binding-examples"
+  },
+  {
+    "id": 19,
+    "category": "Kubernetes Threat Model",
+    "question": "An attacker gains access to a pod and uses the mounted ServiceAccount token to interact with the Kubernetes API. Which type of attack does this represent?",
+    "answers": [
+      "Denial of Service",
+      "Lateral movement and privilege escalation",
+      "Network sniffing",
+      "Physical access compromise"
+    ],
+    "correct": 1,
+    "explanation": "Using a compromised pod's ServiceAccount token to access the Kubernetes API is a form of lateral movement (moving from one resource to another) and potentially privilege escalation (gaining higher privileges through the ServiceAccount's RBAC permissions). This is why automounting tokens should be disabled when not needed.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/security/overview/"
+  },
+  {
+    "id": 20,
+    "category": "Kubernetes Threat Model",
+    "question": "In the STRIDE threat model, what does the 'S' stand for?",
+    "answers": [
+      "Scanning",
+      "Spoofing",
+      "Snooping",
+      "Session hijacking"
+    ],
+    "correct": 1,
+    "explanation": "In the STRIDE threat model, S stands for Spoofing (identity spoofing), T for Tampering, R for Repudiation, I for Information Disclosure, D for Denial of Service, and E for Elevation of Privilege. Spoofing involves an attacker pretending to be someone or something else.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/security/overview/"
+  },
+  {
+    "id": 21,
+    "category": "Kubernetes Threat Model",
+    "question": "Which Kubernetes resource, if misconfigured, could allow an attacker to escape the container and access the host filesystem?",
+    "answers": [
+      "ConfigMap",
+      "hostPath volume",
+      "PersistentVolumeClaim",
+      "ServiceAccount"
+    ],
+    "correct": 1,
+    "explanation": "A hostPath volume mounts a file or directory from the host node's filesystem into a pod. If misconfigured (e.g., mounting / or sensitive paths like /etc), an attacker inside the container can read or write to the host filesystem, effectively escaping the container's isolation boundary.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/storage/volumes/#hostpath"
+  },
+  {
+    "id": 22,
+    "category": "Kubernetes Threat Model",
+    "question": "Which of the following is a common initial access vector in the MITRE ATT&CK framework for Kubernetes?",
+    "answers": [
+      "Running kube-bench",
+      "An exposed Kubernetes dashboard without authentication",
+      "Applying a NetworkPolicy",
+      "Creating a PodDisruptionBudget"
+    ],
+    "correct": 1,
+    "explanation": "An exposed Kubernetes dashboard without authentication is a well-known initial access vector. Attackers can use it to deploy malicious workloads, access secrets, and take control of the cluster. The MITRE ATT&CK framework for containers documents such attack techniques.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/"
+  },
+  {
+    "id": 23,
+    "category": "Kubernetes Threat Model",
+    "question": "A container running with the privileged security context set to true gains which level of access?",
+    "answers": [
+      "Read-only access to the host network namespace",
+      "Access only to the container's own namespace",
+      "Nearly equivalent access to all devices and capabilities on the host",
+      "Administrative access to the Kubernetes API server only"
+    ],
+    "correct": 2,
+    "explanation": "A privileged container gets almost all capabilities of the host, can access all devices on the host, and shares the host's kernel without most isolation mechanisms. This effectively removes container boundaries and should be avoided except for specific system-level workloads.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/security/pod-security-standards/"
+  },
+  {
+    "id": 24,
+    "category": "Platform Security",
+    "question": "What is the primary purpose of container image scanning in a CI/CD pipeline?",
+    "answers": [
+      "To optimize the image size for faster deployments",
+      "To detect known vulnerabilities (CVEs) in image layers and dependencies",
+      "To verify that the image uses the correct base operating system",
+      "To ensure the image is compatible with the target Kubernetes version"
+    ],
+    "correct": 1,
+    "explanation": "Container image scanning analyzes image layers and installed packages against databases of known vulnerabilities (CVEs). Integrating scanning into CI/CD pipelines enables shift-left security by catching vulnerabilities before images are deployed to production.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/containers/images/"
+  },
+  {
+    "id": 25,
+    "category": "Platform Security",
+    "question": "Which tool is part of the Sigstore project and is used to sign container images without managing long-lived signing keys?",
+    "answers": [
+      "Notary",
+      "Cosign",
+      "TUF",
+      "Vault"
+    ],
+    "correct": 1,
+    "explanation": "Cosign is a tool from the Sigstore project designed to sign, verify, and store container image signatures. It supports keyless signing using OIDC identity, eliminating the need to manage long-lived private keys. This makes software supply chain security more accessible.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/containers/images/"
+  },
+  {
+    "id": 26,
+    "category": "Platform Security",
+    "question": "What is the purpose of an ImagePolicyWebhook admission controller?",
+    "answers": [
+      "To automatically pull images from private registries",
+      "To validate container images against a policy before allowing pod creation",
+      "To compress container images for faster deployment",
+      "To cache container images on each node"
+    ],
+    "correct": 1,
+    "explanation": "The ImagePolicyWebhook admission controller allows external backend services to validate container images before pods are created. This can enforce policies such as requiring images to come from approved registries, be signed, or pass vulnerability scans.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/#imagepolicywebhook"
+  },
+  {
+    "id": 27,
+    "category": "Platform Security",
+    "question": "Which of the following are best practices for runtime security in Kubernetes? (Select all that apply)",
+    "answers": [
+      "Using seccomp profiles to restrict system calls available to containers",
+      "Deploying runtime threat detection tools like Falco to monitor for suspicious activity",
+      "Disabling all logging to reduce performance overhead",
+      "Using AppArmor or SELinux profiles to enforce mandatory access controls"
+    ],
+    "correct": [0, 1, 3],
+    "explanation": "Runtime security best practices include using seccomp profiles to restrict available system calls, deploying runtime monitoring tools like Falco, and enforcing mandatory access controls via AppArmor or SELinux. Disabling logging is counterproductive as it removes visibility needed for detecting and investigating security incidents.",
+    "multiple_choice": true,
+    "reference": "https://kubernetes.io/docs/tutorials/security/seccomp/"
+  },
+  {
+    "id": 28,
+    "category": "Platform Security",
+    "question": "What is a Software Bill of Materials (SBOM) in the context of supply chain security?",
+    "answers": [
+      "A list of all Kubernetes nodes in the cluster",
+      "A formal record of all components, libraries, and dependencies included in a software artifact",
+      "A document listing all team members with access to the CI/CD pipeline",
+      "A configuration file for the container runtime"
+    ],
+    "correct": 1,
+    "explanation": "An SBOM is a comprehensive inventory of all components, libraries, and dependencies in a software artifact. In the context of supply chain security, SBOMs enable organizations to track what is inside their container images, identify affected software when new vulnerabilities are disclosed, and meet compliance requirements.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/security/overview/"
+  },
+  {
+    "id": 29,
+    "category": "Compliance and Security Frameworks",
+    "question": "What is kube-bench used for?",
+    "answers": [
+      "Benchmarking Kubernetes cluster performance",
+      "Checking whether a Kubernetes cluster is deployed according to CIS Kubernetes Benchmark security recommendations",
+      "Load testing Kubernetes services",
+      "Measuring container startup times"
+    ],
+    "correct": 1,
+    "explanation": "kube-bench is a tool that runs the CIS Kubernetes Benchmark checks against a Kubernetes cluster. It verifies whether the cluster configuration follows security best practices defined by the Center for Internet Security (CIS), covering areas like API server settings, etcd configuration, and kubelet security.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/security/overview/"
+  },
+  {
+    "id": 30,
+    "category": "Compliance and Security Frameworks",
+    "question": "Which of the following correctly describes OPA Gatekeeper in the context of Kubernetes security compliance?",
+    "answers": [
+      "A network proxy that encrypts traffic between pods",
+      "A policy engine that enforces custom policies via admission control using ConstraintTemplates and Constraints",
+      "A vulnerability scanner for container images",
+      "A certificate management tool for cluster TLS"
+    ],
+    "correct": 1,
+    "explanation": "OPA (Open Policy Agent) Gatekeeper is a customizable admission webhook that enforces policies on Kubernetes resources. It uses ConstraintTemplates to define policy logic (written in Rego) and Constraints to apply those templates to specific resources, enabling organizations to enforce compliance requirements at the cluster level.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/security/overview/"
+  }
+]

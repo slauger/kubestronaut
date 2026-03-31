@@ -1,0 +1,452 @@
+[
+  {
+    "id": 1,
+    "category": "Application Design and Build",
+    "question": "Which multi-container design pattern uses a helper container that fetches data or configuration and makes it available to the main application container via a shared volume?",
+    "answers": [
+      "Sidecar pattern",
+      "Ambassador pattern",
+      "Adapter pattern",
+      "Init container pattern"
+    ],
+    "correct": 0,
+    "explanation": "The sidecar pattern places a helper container alongside the main container in the same Pod. The sidecar can fetch data, ship logs, or provide other auxiliary functionality, sharing volumes and network namespace with the main container.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/"
+  },
+  {
+    "id": 2,
+    "category": "Application Design and Build",
+    "question": "What happens if an init container in a Pod fails?",
+    "answers": [
+      "The Pod continues starting the remaining init containers",
+      "The Pod skips the failed init container and starts the main containers",
+      "Kubernetes restarts the init container according to the Pod's restartPolicy",
+      "The Pod is immediately deleted from the cluster"
+    ],
+    "correct": 2,
+    "explanation": "If an init container fails, Kubernetes restarts the Pod's init container according to the Pod's restartPolicy. If the restartPolicy is set to Always or OnFailure, the init container will be retried. Init containers must complete successfully in order before application containers start.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/workloads/pods/init-containers/"
+  },
+  {
+    "id": 3,
+    "category": "Application Design and Build",
+    "question": "Which field in a Job spec controls how many times a Job's Pod will be retried before the Job is considered failed?",
+    "answers": [
+      "spec.retryLimit",
+      "spec.backoffLimit",
+      "spec.restartPolicy",
+      "spec.failureThreshold"
+    ],
+    "correct": 1,
+    "explanation": "The spec.backoffLimit field specifies the number of retries before a Job is considered failed. The default value is 6. Each restart uses an exponential back-off delay (10s, 20s, 40s, etc.) capped at six minutes.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/workloads/controllers/job/"
+  },
+  {
+    "id": 4,
+    "category": "Application Design and Build",
+    "question": "A CronJob is configured with spec.concurrencyPolicy set to 'Forbid'. What happens if a new scheduled run is due while a previous run is still active?",
+    "answers": [
+      "The new run starts alongside the existing one",
+      "The new run is skipped entirely",
+      "The existing run is terminated and the new run starts",
+      "The new run is queued and starts after the existing run completes"
+    ],
+    "correct": 1,
+    "explanation": "When concurrencyPolicy is set to 'Forbid', the CronJob does not allow concurrent runs. If a previous run is still active when a new run is due, the new run is skipped. The other options correspond to 'Allow' (default) and 'Replace' policies respectively.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/"
+  },
+  {
+    "id": 5,
+    "category": "Application Design and Build",
+    "question": "Which of the following are valid accessModes for a PersistentVolumeClaim? (Select all that apply)",
+    "answers": [
+      "ReadWriteOnce",
+      "ReadOnlyMany",
+      "ReadWriteMany",
+      "ReadWriteOncePod"
+    ],
+    "correct": [0, 1, 2, 3],
+    "explanation": "All four are valid PersistentVolume access modes. ReadWriteOnce (RWO) allows read-write by a single node, ReadOnlyMany (ROX) allows read-only by many nodes, ReadWriteMany (RWX) allows read-write by many nodes, and ReadWriteOncePod (RWOP) restricts read-write access to a single Pod.",
+    "multiple_choice": true,
+    "reference": "https://kubernetes.io/docs/concepts/storage/persistent-volumes/#access-modes"
+  },
+  {
+    "id": 6,
+    "category": "Application Design and Build",
+    "question": "In a Dockerfile, what is the difference between the CMD and ENTRYPOINT instructions when both are specified?",
+    "answers": [
+      "CMD overrides ENTRYPOINT completely",
+      "ENTRYPOINT defines the executable and CMD provides default arguments to it",
+      "CMD and ENTRYPOINT are mutually exclusive and cannot be used together",
+      "ENTRYPOINT provides default arguments and CMD defines the executable"
+    ],
+    "correct": 1,
+    "explanation": "When both ENTRYPOINT and CMD are specified, the ENTRYPOINT defines the executable that runs in the container, and CMD provides the default arguments. In a Kubernetes Pod spec, the command field overrides ENTRYPOINT and the args field overrides CMD.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/"
+  },
+  {
+    "id": 7,
+    "category": "Application Deployment",
+    "question": "What is the default deployment strategy used by a Kubernetes Deployment?",
+    "answers": [
+      "Recreate",
+      "RollingUpdate",
+      "Blue/Green",
+      "Canary"
+    ],
+    "correct": 1,
+    "explanation": "The default deployment strategy for a Kubernetes Deployment is RollingUpdate. This strategy gradually replaces old Pods with new ones, ensuring that a minimum number of Pods are available at all times during the update process.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy"
+  },
+  {
+    "id": 8,
+    "category": "Application Deployment",
+    "question": "In a RollingUpdate strategy, what does the maxSurge parameter control?",
+    "answers": [
+      "The maximum number of Pods that can be unavailable during the update",
+      "The maximum number of Pods that can be created above the desired replica count during the update",
+      "The maximum time a Pod can take to become ready",
+      "The maximum number of old ReplicaSets to retain"
+    ],
+    "correct": 1,
+    "explanation": "maxSurge specifies the maximum number of Pods that can be created above the desired number of Pods during an update. It can be an absolute number or a percentage of the desired Pods. This allows new Pods to be created before old ones are removed.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#max-surge"
+  },
+  {
+    "id": 9,
+    "category": "Application Deployment",
+    "question": "Which kubectl command is used to undo the last rollout of a Deployment?",
+    "answers": [
+      "kubectl rollout restart deployment/myapp",
+      "kubectl rollout undo deployment/myapp",
+      "kubectl rollout revert deployment/myapp",
+      "kubectl rollout rollback deployment/myapp"
+    ],
+    "correct": 1,
+    "explanation": "The command 'kubectl rollout undo deployment/myapp' rolls back the Deployment to the previous revision. You can also specify a specific revision with --to-revision=N. The 'kubectl rollout restart' command triggers a new rollout without reverting, and the other options are not valid kubectl subcommands.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-back-a-deployment"
+  },
+  {
+    "id": 10,
+    "category": "Application Deployment",
+    "question": "When using the Recreate deployment strategy, what happens during an update?",
+    "answers": [
+      "New Pods are created first, then old Pods are terminated",
+      "Old and new Pods run simultaneously during the transition",
+      "All existing Pods are terminated before new Pods are created",
+      "Pods are updated in-place without restart"
+    ],
+    "correct": 2,
+    "explanation": "The Recreate strategy terminates all existing Pods before creating new ones. This causes downtime but ensures that old and new versions do not run simultaneously. It is useful when the application cannot tolerate running multiple versions concurrently.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#recreate-deployment"
+  },
+  {
+    "id": 11,
+    "category": "Application Deployment",
+    "question": "Which Helm command is used to install a chart while also setting a custom release name?",
+    "answers": [
+      "helm deploy myrelease ./mychart",
+      "helm install myrelease ./mychart",
+      "helm create myrelease ./mychart",
+      "helm apply myrelease ./mychart"
+    ],
+    "correct": 1,
+    "explanation": "The 'helm install <release-name> <chart>' command installs a Helm chart with a specified release name. Helm uses the release name to track the installation, enabling upgrades, rollbacks, and uninstallation of that specific release.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#writing-a-deployment-spec"
+  },
+  {
+    "id": 12,
+    "category": "Application Deployment",
+    "question": "Which of the following are valid approaches to implement a canary deployment in Kubernetes? (Select all that apply)",
+    "answers": [
+      "Run two Deployments with different versions behind the same Service, controlling traffic by replica count",
+      "Use a single Deployment with maxSurge set to 100%",
+      "Use an Ingress controller with traffic splitting annotations",
+      "Use a service mesh to split traffic by percentage"
+    ],
+    "correct": [0, 2, 3],
+    "explanation": "Canary deployments can be implemented by running two Deployments with different versions behind the same Service and adjusting replica counts to control traffic ratio, by using an Ingress controller that supports traffic splitting, or by using a service mesh like Istio for fine-grained traffic control. Simply setting maxSurge to 100% in a single Deployment performs a rolling update, not a canary deployment.",
+    "multiple_choice": true,
+    "reference": "https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#canary-deployment"
+  },
+  {
+    "id": 13,
+    "category": "Application Environment, Configuration and Security",
+    "question": "How can you consume a specific key from a ConfigMap as an environment variable in a Pod?",
+    "answers": [
+      "Using spec.containers[].env[].valueFrom.configMapKeyRef",
+      "Using spec.containers[].env[].valueFrom.configMapRef",
+      "Using spec.containers[].envFrom.configMapKey",
+      "Using spec.containers[].configMap.envKey"
+    ],
+    "correct": 0,
+    "explanation": "To consume a specific key from a ConfigMap as an environment variable, you use spec.containers[].env[].valueFrom.configMapKeyRef, specifying the ConfigMap name and the key. This allows you to selectively expose individual ConfigMap entries as environment variables.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/#define-container-environment-variables-using-configmap-data"
+  },
+  {
+    "id": 14,
+    "category": "Application Environment, Configuration and Security",
+    "question": "What type of encoding is used for data values stored in a Kubernetes Secret?",
+    "answers": [
+      "AES-256 encryption",
+      "SHA-256 hashing",
+      "Base64 encoding",
+      "No encoding is applied"
+    ],
+    "correct": 2,
+    "explanation": "Kubernetes Secrets store data values in base64-encoded format. This is encoding, not encryption, meaning the data can be easily decoded. For actual encryption at rest, you need to configure encryption providers in the API server or use external secret management solutions.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/configuration/secret/"
+  },
+  {
+    "id": 15,
+    "category": "Application Environment, Configuration and Security",
+    "question": "Which SecurityContext field prevents a container process from gaining more privileges than its parent process?",
+    "answers": [
+      "runAsNonRoot",
+      "readOnlyRootFilesystem",
+      "allowPrivilegeEscalation",
+      "privileged"
+    ],
+    "correct": 2,
+    "explanation": "Setting allowPrivilegeEscalation to false prevents a container's child processes from gaining more privileges than the parent process. This controls whether the setuid/setgid bits and other privilege escalation mechanisms are allowed. runAsNonRoot ensures the container runs as a non-root user but does not prevent privilege escalation within the allowed scope.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/tasks/configure-pod-container/security-context/"
+  },
+  {
+    "id": 16,
+    "category": "Application Environment, Configuration and Security",
+    "question": "What is the purpose of a ServiceAccount in Kubernetes?",
+    "answers": [
+      "To provide network identity for Services",
+      "To provide an identity for processes running in a Pod to interact with the API server",
+      "To manage user accounts for cluster administrators",
+      "To configure TLS certificates for Services"
+    ],
+    "correct": 1,
+    "explanation": "A ServiceAccount provides an identity for processes running in a Pod. When a Pod communicates with the API server, it authenticates as a particular ServiceAccount. This identity can be used with RBAC to control what the Pod is allowed to do in the cluster.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/security/service-accounts/"
+  },
+  {
+    "id": 17,
+    "category": "Application Environment, Configuration and Security",
+    "question": "Which resource specification fields are used to define a container's minimum guaranteed resources and maximum allowed resources?",
+    "answers": [
+      "spec.resources.minimum and spec.resources.maximum",
+      "spec.resources.guaranteed and spec.resources.burstable",
+      "spec.resources.requests and spec.resources.limits",
+      "spec.resources.reserved and spec.resources.capped"
+    ],
+    "correct": 2,
+    "explanation": "Resource requests define the minimum amount of resources guaranteed to a container, and resource limits define the maximum amount a container can consume. The scheduler uses requests to decide which node to place the Pod on, and the kubelet enforces limits to prevent a container from exceeding its allocation.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/"
+  },
+  {
+    "id": 18,
+    "category": "Application Environment, Configuration and Security",
+    "question": "A ResourceQuota is applied to a namespace with a hard limit of 10 Pods. What happens when a user tries to create an 11th Pod in that namespace?",
+    "answers": [
+      "The oldest Pod is evicted to make room for the new one",
+      "The new Pod is created in a pending state until a slot becomes available",
+      "The API server rejects the Pod creation request",
+      "The Pod is created but scheduled to a different namespace"
+    ],
+    "correct": 2,
+    "explanation": "When a ResourceQuota limit is reached, the API server rejects requests to create new resources that would exceed the quota. The user receives a 403 Forbidden error indicating that the quota has been exceeded. The Pod is not queued or redirected.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/policy/resource-quotas/"
+  },
+  {
+    "id": 19,
+    "category": "Application Environment, Configuration and Security",
+    "question": "Which of the following are valid ways to mount a Secret into a Pod? (Select all that apply)",
+    "answers": [
+      "As environment variables using envFrom with secretRef",
+      "As a volume mounted to a directory in the container",
+      "As individual environment variables using valueFrom with secretKeyRef",
+      "As command-line arguments in the container's args field directly"
+    ],
+    "correct": [0, 1, 2],
+    "explanation": "Secrets can be consumed as environment variables using envFrom with secretRef (exposing all keys), as individual environment variables using valueFrom with secretKeyRef, or mounted as files via a volume. While environment variables derived from Secrets can be referenced in args using $(VAR_NAME) syntax, Secrets cannot be directly passed as command-line arguments without first being exposed as environment variables.",
+    "multiple_choice": true,
+    "reference": "https://kubernetes.io/docs/concepts/configuration/secret/#using-secrets"
+  },
+  {
+    "id": 20,
+    "category": "Application Environment, Configuration and Security",
+    "question": "What is the effect of setting spec.automountServiceAccountToken to false on a Pod?",
+    "answers": [
+      "The Pod will not be assigned a ServiceAccount",
+      "The ServiceAccount token will not be automatically mounted into the Pod",
+      "The Pod cannot communicate with any other Pods",
+      "The Pod's ServiceAccount loses all RBAC permissions"
+    ],
+    "correct": 1,
+    "explanation": "Setting automountServiceAccountToken to false prevents the ServiceAccount token from being automatically mounted at /var/run/secrets/kubernetes.io/serviceaccount in the Pod. The Pod still has a ServiceAccount assigned but does not receive the token file, which means it cannot authenticate to the API server using the automatically mounted credentials.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#opt-out-of-api-credential-automounting"
+  },
+  {
+    "id": 21,
+    "category": "Services and Networking",
+    "question": "Which Service type exposes the Service on each Node's IP at a static port?",
+    "answers": [
+      "ClusterIP",
+      "NodePort",
+      "LoadBalancer",
+      "ExternalName"
+    ],
+    "correct": 1,
+    "explanation": "A NodePort Service exposes the Service on each Node's IP address at a static port (the NodePort). Traffic to any node on that port is forwarded to the Service. The NodePort range is 30000-32767 by default. A LoadBalancer Service also creates a NodePort but additionally provisions an external load balancer.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport"
+  },
+  {
+    "id": 22,
+    "category": "Services and Networking",
+    "question": "What is the correct DNS name to reach a Service named 'backend' in the namespace 'production' from a Pod in a different namespace?",
+    "answers": [
+      "backend.production",
+      "backend.production.svc.cluster.local",
+      "production.backend.svc.cluster.local",
+      "backend.svc.production.cluster.local"
+    ],
+    "correct": 1,
+    "explanation": "The fully qualified DNS name for a Kubernetes Service follows the pattern <service-name>.<namespace>.svc.cluster.local. So a Service named 'backend' in the 'production' namespace is reachable at backend.production.svc.cluster.local. The shorter form backend.production also works within the cluster.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/"
+  },
+  {
+    "id": 23,
+    "category": "Services and Networking",
+    "question": "Which Kubernetes resource is used to configure HTTP and HTTPS routing to Services based on hostnames and URL paths?",
+    "answers": [
+      "Service with type LoadBalancer",
+      "NetworkPolicy",
+      "Ingress",
+      "Endpoint"
+    ],
+    "correct": 2,
+    "explanation": "An Ingress resource defines rules for routing external HTTP/HTTPS traffic to internal Services based on hostnames and URL paths. An Ingress controller (such as NGINX Ingress Controller) implements these rules. A LoadBalancer Service provides L4 load balancing but does not offer path-based routing.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/services-networking/ingress/"
+  },
+  {
+    "id": 24,
+    "category": "Services and Networking",
+    "question": "By default, when no NetworkPolicy is applied to a namespace, what is the network behavior for Pods in that namespace?",
+    "answers": [
+      "All ingress traffic is denied and all egress traffic is allowed",
+      "All ingress and egress traffic is denied",
+      "All ingress and egress traffic is allowed",
+      "Only traffic within the same namespace is allowed"
+    ],
+    "correct": 2,
+    "explanation": "By default, if no NetworkPolicy is applied to a namespace, all ingress and egress traffic is allowed to and from Pods in that namespace. NetworkPolicies are additive and once a Pod is selected by any NetworkPolicy, all traffic not explicitly allowed by a NetworkPolicy is denied for that direction (ingress or egress).",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/services-networking/network-policies/"
+  },
+  {
+    "id": 25,
+    "category": "Services and Networking",
+    "question": "Which NetworkPolicy spec field is used to define rules for traffic leaving selected Pods?",
+    "answers": [
+      "spec.ingress",
+      "spec.egress",
+      "spec.outbound",
+      "spec.trafficPolicy"
+    ],
+    "correct": 1,
+    "explanation": "The spec.egress field in a NetworkPolicy defines rules for outgoing traffic from the selected Pods. Each egress rule can specify allowed destination Pods, namespaces, IP blocks, and ports. The spec.ingress field controls incoming traffic, and the other options are not valid NetworkPolicy fields.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/services-networking/network-policies/#networkpolicy-resource"
+  },
+  {
+    "id": 26,
+    "category": "Services and Networking",
+    "question": "Which of the following statements about a headless Service (clusterIP: None) are correct? (Select all that apply)",
+    "answers": [
+      "DNS queries return the IP addresses of the individual Pods instead of a single virtual IP",
+      "It is commonly used with StatefulSets to provide stable network identities",
+      "It cannot be used with label selectors",
+      "It does not create Endpoints objects"
+    ],
+    "correct": [0, 1],
+    "explanation": "A headless Service (clusterIP: None) does not receive a cluster IP. DNS queries for the Service return the IP addresses of the individual backing Pods directly. This is commonly used with StatefulSets to provide stable DNS names for each Pod. Headless Services can still use label selectors, and Kubernetes does create Endpoints (or EndpointSlice) objects for them.",
+    "multiple_choice": true,
+    "reference": "https://kubernetes.io/docs/concepts/services-networking/service/#headless-services"
+  },
+  {
+    "id": 27,
+    "category": "Application Observability and Maintenance",
+    "question": "What is the difference between a liveness probe and a readiness probe?",
+    "answers": [
+      "A liveness probe determines if a container should be restarted; a readiness probe determines if a container should receive traffic",
+      "A liveness probe checks network connectivity; a readiness probe checks disk usage",
+      "A liveness probe runs once at startup; a readiness probe runs continuously",
+      "There is no functional difference; they are interchangeable"
+    ],
+    "correct": 0,
+    "explanation": "A liveness probe determines if a container is still running and healthy. If it fails, the kubelet kills the container and applies the restart policy. A readiness probe determines if a container is ready to accept traffic. If it fails, the Pod's IP is removed from all Service endpoints, but the container is not restarted.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/"
+  },
+  {
+    "id": 28,
+    "category": "Application Observability and Maintenance",
+    "question": "Which kubectl command shows the logs of a previously crashed container in a Pod?",
+    "answers": [
+      "kubectl logs pod/myapp --crashed",
+      "kubectl logs pod/myapp --previous",
+      "kubectl logs pod/myapp --history",
+      "kubectl describe pod/myapp --logs"
+    ],
+    "correct": 1,
+    "explanation": "The 'kubectl logs pod/myapp --previous' (or -p) flag shows logs from the previous instance of a container. This is useful for diagnosing crashes by examining the log output of the container that terminated. The --crashed, --history flags and the describe --logs combination are not valid kubectl options.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/reference/kubectl/generated/kubectl_logs/"
+  },
+  {
+    "id": 29,
+    "category": "Application Observability and Maintenance",
+    "question": "What is the purpose of a startup probe in Kubernetes?",
+    "answers": [
+      "To check if the cluster has started successfully",
+      "To disable liveness and readiness checks until the container has started, protecting slow-starting containers",
+      "To automatically scale Pods during startup",
+      "To initialize the container's environment variables on startup"
+    ],
+    "correct": 1,
+    "explanation": "A startup probe is used to determine when a container application has started. If a startup probe is configured, liveness and readiness probes are disabled until the startup probe succeeds. This protects slow-starting containers from being killed by the liveness probe before they finish initializing.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-startup-probes"
+  },
+  {
+    "id": 30,
+    "category": "Application Observability and Maintenance",
+    "question": "Which of the following kubectl commands can be used to troubleshoot a Pod that is stuck in CrashLoopBackOff? (Select all that apply)",
+    "answers": [
+      "kubectl describe pod <pod-name>",
+      "kubectl logs <pod-name> --previous",
+      "kubectl get events --field-selector involvedObject.name=<pod-name>",
+      "kubectl exec -it <pod-name> -- /bin/sh"
+    ],
+    "correct": [0, 1, 2],
+    "explanation": "When troubleshooting a CrashLoopBackOff, 'kubectl describe pod' shows events and container state details, 'kubectl logs --previous' shows logs from the crashed container, and 'kubectl get events' shows related cluster events. 'kubectl exec' typically cannot be used because the container keeps crashing and is not in a running state long enough to attach to it.",
+    "multiple_choice": true,
+    "reference": "https://kubernetes.io/docs/tasks/debug/debug-application/debug-running-pod/"
+  }
+]
