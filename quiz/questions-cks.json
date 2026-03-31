@@ -1,0 +1,452 @@
+[
+  {
+    "id": 1,
+    "category": "Cluster Setup",
+    "question": "Which tool is used to check whether a Kubernetes cluster is deployed according to the CIS Kubernetes Benchmark?",
+    "answers": [
+      "kube-bench",
+      "kube-hunter",
+      "kubeaudit",
+      "kube-score"
+    ],
+    "correct": 0,
+    "explanation": "kube-bench is an open-source tool by Aqua Security that checks whether Kubernetes is deployed according to the CIS Kubernetes Benchmark. It runs the documented checks and reports compliance status for each recommendation.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/tasks/administer-cluster/securing-a-cluster/"
+  },
+  {
+    "id": 2,
+    "category": "Cluster Setup",
+    "question": "Which Kubernetes resource is used to restrict network traffic between Pods at the namespace level?",
+    "answers": [
+      "PodSecurityPolicy",
+      "NetworkPolicy",
+      "ResourceQuota",
+      "LimitRange"
+    ],
+    "correct": 1,
+    "explanation": "NetworkPolicy is the Kubernetes resource that controls network traffic flow between Pods at the namespace level. It uses label selectors to define ingress and egress rules, allowing administrators to restrict which Pods can communicate with each other.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/services-networking/network-policies/"
+  },
+  {
+    "id": 3,
+    "category": "Cluster Setup",
+    "question": "When configuring TLS termination for an Ingress resource, which fields must be present in the referenced Kubernetes Secret?",
+    "answers": [
+      "cert and key",
+      "tls.crt and tls.key",
+      "server.crt and server.key",
+      "certificate and private_key"
+    ],
+    "correct": 1,
+    "explanation": "A TLS Secret used by an Ingress resource must contain the keys tls.crt (the certificate) and tls.key (the private key). The Secret must be of type kubernetes.io/tls for Ingress TLS termination to work correctly.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/services-networking/ingress/#tls"
+  },
+  {
+    "id": 4,
+    "category": "Cluster Setup",
+    "question": "How can you verify the integrity of Kubernetes binaries before deploying them?",
+    "answers": [
+      "Run the binary with --verify flag",
+      "Compare the SHA-256/SHA-512 checksum of the downloaded binary against the published checksums",
+      "Check the file size matches the expected value",
+      "Scan the binary with an antivirus tool"
+    ],
+    "correct": 1,
+    "explanation": "Kubernetes publishes SHA-256 and SHA-512 checksums alongside each release. By downloading the checksum file and comparing it against the hash of the downloaded binary using sha256sum or sha512sum, you can verify that the binary has not been tampered with.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/"
+  },
+  {
+    "id": 5,
+    "category": "Cluster Hardening",
+    "question": "Which RBAC resource binds a Role to a user or ServiceAccount within a specific namespace?",
+    "answers": [
+      "ClusterRoleBinding",
+      "RoleBinding",
+      "ServiceAccountBinding",
+      "PolicyBinding"
+    ],
+    "correct": 1,
+    "explanation": "A RoleBinding grants the permissions defined in a Role to a user, group, or ServiceAccount within a specific namespace. ClusterRoleBinding, in contrast, grants permissions cluster-wide. RoleBinding is the namespace-scoped mechanism for RBAC permission assignment.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/reference/access-authn-authz/rbac/#rolebinding-and-clusterrolebinding"
+  },
+  {
+    "id": 6,
+    "category": "Cluster Hardening",
+    "question": "Starting from Kubernetes 1.24, what changed about ServiceAccount token handling?",
+    "answers": [
+      "ServiceAccount tokens are no longer supported",
+      "Tokens are automatically rotated every hour",
+      "Automatic creation of Secret-based long-lived tokens was removed; bound tokens via TokenRequest API are used instead",
+      "ServiceAccounts can no longer be assigned to Pods"
+    ],
+    "correct": 2,
+    "explanation": "In Kubernetes 1.24, the automatic creation of Secret-based long-lived ServiceAccount tokens (via the TokenController) was removed. Instead, Pods receive bound, time-limited tokens projected via the TokenRequest API. This reduces the risk associated with long-lived credentials.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/reference/access-authn-authz/service-accounts-admin/"
+  },
+  {
+    "id": 7,
+    "category": "Cluster Hardening",
+    "question": "Which admission controller prevents Pods from being created in the default namespace without explicit permission?",
+    "answers": [
+      "NamespaceLifecycle",
+      "PodSecurity",
+      "AlwaysDeny",
+      "There is no built-in admission controller that does this; a custom policy must be used"
+    ],
+    "correct": 3,
+    "explanation": "Kubernetes does not ship a built-in admission controller that specifically prevents Pod creation in the default namespace. To enforce this restriction, administrators must use a custom admission webhook, OPA/Gatekeeper, or Kyverno policy that denies workload creation in the default namespace.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/"
+  },
+  {
+    "id": 8,
+    "category": "Cluster Hardening",
+    "question": "Which of the following are valid Kubernetes audit policy levels? (Select all that apply)",
+    "answers": [
+      "None",
+      "Metadata",
+      "Request",
+      "Full"
+    ],
+    "correct": [0, 1, 2],
+    "explanation": "Kubernetes audit policy supports four levels: None (do not log), Metadata (log request metadata only), Request (log metadata and request body), and RequestResponse (log metadata, request body, and response body). 'Full' is not a valid audit level; the most verbose level is called 'RequestResponse'.",
+    "multiple_choice": true,
+    "reference": "https://kubernetes.io/docs/tasks/debug/debug-cluster/audit/#audit-policy"
+  },
+  {
+    "id": 9,
+    "category": "Cluster Hardening",
+    "question": "Which of the following are recommended steps when hardening a Kubernetes cluster upgrade process? (Select all that apply)",
+    "answers": [
+      "Upgrade one minor version at a time following the documented upgrade path",
+      "Review the changelog for deprecated and removed APIs before upgrading",
+      "Skip etcd backups to speed up the upgrade process",
+      "Drain nodes before upgrading the kubelet to ensure workload availability"
+    ],
+    "correct": [0, 1, 3],
+    "explanation": "When upgrading a Kubernetes cluster, you should upgrade one minor version at a time, review changelogs for deprecated/removed APIs, and drain nodes before upgrading the kubelet. Skipping etcd backups is dangerous; you should always back up etcd before an upgrade to allow rollback in case of failure.",
+    "multiple_choice": true,
+    "reference": "https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade/"
+  },
+  {
+    "id": 10,
+    "category": "System Hardening",
+    "question": "Which Linux security module can be used to restrict a container's capabilities by defining a profile that limits file access, network access, and system calls?",
+    "answers": [
+      "SELinux only",
+      "AppArmor",
+      "cgroups",
+      "iptables"
+    ],
+    "correct": 1,
+    "explanation": "AppArmor is a Linux security module that uses profiles to restrict a program's capabilities, including file access, network access, and system calls. Kubernetes supports AppArmor profiles via annotations (or native fields in newer versions) on Pods to enforce mandatory access control on containers.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/tutorials/security/apparmor/"
+  },
+  {
+    "id": 11,
+    "category": "System Hardening",
+    "question": "What does a seccomp profile do when applied to a container in Kubernetes?",
+    "answers": [
+      "Encrypts all traffic between containers",
+      "Restricts which system calls the container process can make to the kernel",
+      "Limits CPU and memory usage of the container",
+      "Controls which files the container can access"
+    ],
+    "correct": 1,
+    "explanation": "Seccomp (secure computing mode) restricts which system calls a container process can make to the Linux kernel. By defining a seccomp profile, administrators can block dangerous syscalls (like mount, reboot, or ptrace) to reduce the kernel attack surface exposed to containers.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/tutorials/security/seccomp/"
+  },
+  {
+    "id": 12,
+    "category": "System Hardening",
+    "question": "Which Pod spec fields should be set to false to prevent a container from sharing the host's PID, network, or IPC namespaces? (Select all that apply)",
+    "answers": [
+      "hostPID",
+      "hostNetwork",
+      "hostIPC",
+      "hostPath"
+    ],
+    "correct": [0, 1, 2],
+    "explanation": "The fields hostPID, hostNetwork, and hostIPC in the Pod spec control whether a Pod shares the host's PID namespace, network namespace, or IPC namespace, respectively. Setting all three to false (the default) isolates the Pod from the host. hostPath is a volume type, not a namespace-sharing field.",
+    "multiple_choice": true,
+    "reference": "https://kubernetes.io/docs/concepts/security/pod-security-standards/"
+  },
+  {
+    "id": 13,
+    "category": "Minimize Microservice Vulnerabilities",
+    "question": "Which Pod Security Standard level enforces the most restrictive security policies?",
+    "answers": [
+      "Privileged",
+      "Baseline",
+      "Restricted",
+      "Hardened"
+    ],
+    "correct": 2,
+    "explanation": "The Restricted Pod Security Standard is the most restrictive of the three defined levels. It enforces best practices for Pod hardening including running as non-root, dropping all capabilities, disallowing privilege escalation, and requiring a read-only root filesystem. The Privileged level is unrestricted, Baseline prevents known privilege escalations, and 'Hardened' is not a defined level.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/security/pod-security-standards/"
+  },
+  {
+    "id": 14,
+    "category": "Minimize Microservice Vulnerabilities",
+    "question": "What is the purpose of the Pod Security Admission controller in Kubernetes?",
+    "answers": [
+      "It replaces NetworkPolicy for controlling Pod-to-Pod communication",
+      "It enforces Pod Security Standards by validating Pod specifications against a defined security level at the namespace level",
+      "It manages encryption of Secrets at rest",
+      "It controls which container images can be pulled"
+    ],
+    "correct": 1,
+    "explanation": "The Pod Security Admission controller is a built-in Kubernetes admission controller that enforces Pod Security Standards. It operates at the namespace level using labels to configure the enforcement mode (enforce, audit, warn) and the security level (privileged, baseline, restricted).",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/security/pod-security-admission/"
+  },
+  {
+    "id": 15,
+    "category": "Minimize Microservice Vulnerabilities",
+    "question": "How does OPA Gatekeeper enforce policies in a Kubernetes cluster?",
+    "answers": [
+      "By modifying the kube-apiserver binary directly",
+      "By running as a ValidatingAdmissionWebhook that evaluates requests against Rego policies defined in ConstraintTemplates",
+      "By injecting a sidecar container into every Pod",
+      "By patching resources after they are created"
+    ],
+    "correct": 1,
+    "explanation": "OPA Gatekeeper operates as a ValidatingAdmissionWebhook in Kubernetes. Policies are written in Rego and packaged as ConstraintTemplate custom resources. When a request hits the API server, Gatekeeper evaluates it against the applicable constraints and can reject requests that violate the defined policies.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/"
+  },
+  {
+    "id": 16,
+    "category": "Minimize Microservice Vulnerabilities",
+    "question": "Which encryption provider for Kubernetes Secrets at rest uses a remote KMS to manage the encryption key?",
+    "answers": [
+      "identity",
+      "aescbc",
+      "secretbox",
+      "kms"
+    ],
+    "correct": 3,
+    "explanation": "The kms encryption provider delegates encryption key management to an external Key Management Service via a gRPC API. This is the recommended approach for production clusters because the actual data encryption keys (DEKs) are encrypted by a key encryption key (KEK) managed externally, improving key lifecycle management and security.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/tasks/administer-cluster/encrypt-data/"
+  },
+  {
+    "id": 17,
+    "category": "Minimize Microservice Vulnerabilities",
+    "question": "What is the primary purpose of container sandboxing technologies like gVisor (runsc)?",
+    "answers": [
+      "To improve container startup performance",
+      "To provide an additional isolation layer between the container and the host kernel by intercepting system calls",
+      "To enable containers to run with root privileges safely",
+      "To encrypt all data within the container filesystem"
+    ],
+    "correct": 1,
+    "explanation": "gVisor (runsc) is a container sandbox that provides an additional layer of isolation by implementing a user-space kernel that intercepts and handles system calls from the containerized application. This prevents the container from directly interacting with the host kernel, reducing the attack surface.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/containers/runtime-class/"
+  },
+  {
+    "id": 18,
+    "category": "Minimize Microservice Vulnerabilities",
+    "question": "In a service mesh like Istio, what does mTLS (mutual TLS) provide?",
+    "answers": [
+      "Only encryption of traffic between services",
+      "Only authentication of the server identity",
+      "Both encryption and mutual authentication of client and server identities between services",
+      "Authorization of API requests between services"
+    ],
+    "correct": 2,
+    "explanation": "Mutual TLS (mTLS) provides both encryption of traffic and mutual authentication. Unlike standard TLS where only the server presents a certificate, in mTLS both the client and server present certificates and verify each other's identity. In a service mesh like Istio, this ensures that only authenticated services can communicate.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/security/overview/"
+  },
+  {
+    "id": 19,
+    "category": "Supply Chain Security",
+    "question": "Which tool is commonly used to scan container images for known vulnerabilities (CVEs)?",
+    "answers": [
+      "kubectl",
+      "Trivy",
+      "Helm",
+      "etcdctl"
+    ],
+    "correct": 1,
+    "explanation": "Trivy is a comprehensive open-source vulnerability scanner by Aqua Security that can scan container images, filesystem, and Git repositories for known vulnerabilities (CVEs), misconfigurations, and exposed secrets. It is widely used in CI/CD pipelines and is referenced in the CKS curriculum.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/security/overview/"
+  },
+  {
+    "id": 20,
+    "category": "Supply Chain Security",
+    "question": "Which Dockerfile instruction should be used instead of ADD when copying local files to reduce attack surface?",
+    "answers": [
+      "RUN cp",
+      "COPY",
+      "MOUNT",
+      "IMPORT"
+    ],
+    "correct": 1,
+    "explanation": "The COPY instruction should be preferred over ADD for copying local files into a container image. ADD has additional features like automatic tar extraction and URL fetching, which can introduce unexpected behavior and security risks. COPY is more explicit and only performs file copying, reducing the attack surface.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/containers/images/"
+  },
+  {
+    "id": 21,
+    "category": "Supply Chain Security",
+    "question": "What is the purpose of using image digest (SHA-256) references instead of tags when specifying container images?",
+    "answers": [
+      "To speed up image pulling",
+      "To reduce image size",
+      "To ensure the exact same image content is always used, preventing tag mutation attacks",
+      "To enable automatic image updates"
+    ],
+    "correct": 2,
+    "explanation": "Image tags are mutable and can be overwritten to point to different image contents. Using image digests (e.g., image@sha256:abc123...) guarantees that the exact same image content is always pulled, preventing supply chain attacks where an attacker overwrites a tag with a malicious image.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy"
+  },
+  {
+    "id": 22,
+    "category": "Supply Chain Security",
+    "question": "Which Kubernetes admission controller can enforce that only images from allowed registries are deployed?",
+    "answers": [
+      "NamespaceLifecycle",
+      "ImagePolicyWebhook",
+      "PodNodeSelector",
+      "DefaultStorageClass"
+    ],
+    "correct": 1,
+    "explanation": "The ImagePolicyWebhook admission controller allows an external backend to make admission decisions about which images are allowed to be used. Combined with tools like OPA/Gatekeeper or Kyverno, it can enforce image allowlisting policies that restrict deployments to images from trusted registries only.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/#imagepolicywebhook"
+  },
+  {
+    "id": 23,
+    "category": "Supply Chain Security",
+    "question": "What does cosign do in the context of container supply chain security?",
+    "answers": [
+      "It scans images for vulnerabilities",
+      "It signs and verifies container images and other OCI artifacts using cryptographic signatures",
+      "It compresses container image layers",
+      "It manages container registry authentication"
+    ],
+    "correct": 1,
+    "explanation": "Cosign, part of the Sigstore project, is used to sign, verify, and store signatures for container images and other OCI artifacts. It enables cryptographic verification of image provenance and integrity, ensuring that only trusted, signed images are deployed in the cluster.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/containers/images/"
+  },
+  {
+    "id": 24,
+    "category": "Supply Chain Security",
+    "question": "Which of the following are recommended Dockerfile best practices for security? (Select all that apply)",
+    "answers": [
+      "Use a specific base image tag or digest instead of 'latest'",
+      "Run the application as root for maximum compatibility",
+      "Use multi-stage builds to minimize the final image size and attack surface",
+      "Add a USER instruction to run the process as a non-root user"
+    ],
+    "correct": [0, 2, 3],
+    "explanation": "Security best practices for Dockerfiles include using specific image tags or digests (not 'latest') to ensure reproducibility, using multi-stage builds to exclude build tools from the final image, and specifying a non-root USER. Running as root increases the risk of container breakout and should be avoided.",
+    "multiple_choice": true,
+    "reference": "https://kubernetes.io/docs/concepts/containers/images/"
+  },
+  {
+    "id": 25,
+    "category": "Monitoring, Logging and Runtime Security",
+    "question": "What is Falco primarily used for in a Kubernetes environment?",
+    "answers": [
+      "Network traffic encryption",
+      "Runtime threat detection by monitoring system calls and generating alerts for suspicious behavior",
+      "Container image building",
+      "Kubernetes cluster autoscaling"
+    ],
+    "correct": 1,
+    "explanation": "Falco is a cloud-native runtime security tool that monitors system calls in real time using rules defined in YAML. It can detect suspicious activity such as unexpected process execution, file access in sensitive directories, or privilege escalation attempts, and generates alerts for incident response.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/tasks/debug/debug-cluster/audit/"
+  },
+  {
+    "id": 26,
+    "category": "Monitoring, Logging and Runtime Security",
+    "question": "Which Kubernetes audit log backend writes audit events to an external HTTP API?",
+    "answers": [
+      "File backend",
+      "Log backend",
+      "Webhook backend",
+      "Stream backend"
+    ],
+    "correct": 2,
+    "explanation": "The Webhook backend sends audit events to an external HTTP API in JSON format. This is useful for integrating with external SIEM systems, log aggregation platforms, or custom audit event processors. The Log backend writes to a file on the API server node.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/tasks/debug/debug-cluster/audit/#audit-backends"
+  },
+  {
+    "id": 27,
+    "category": "Monitoring, Logging and Runtime Security",
+    "question": "What does making a container's filesystem immutable (read-only root filesystem) help prevent?",
+    "answers": [
+      "Network-based attacks",
+      "An attacker writing malicious scripts, binaries, or modifying application files within the container at runtime",
+      "Memory-based exploits",
+      "DNS spoofing attacks"
+    ],
+    "correct": 1,
+    "explanation": "Setting readOnlyRootFilesystem to true in the container's securityContext makes the root filesystem read-only. This prevents attackers who gain code execution from writing malicious binaries, scripts, web shells, or modifying application code within the container, significantly limiting post-exploitation options.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/security/pod-security-standards/"
+  },
+  {
+    "id": 28,
+    "category": "Monitoring, Logging and Runtime Security",
+    "question": "Which of the following Falco rules would detect a shell being spawned inside a container? (Select all that apply)",
+    "answers": [
+      "A rule matching process names like bash, sh, or zsh in a container context",
+      "A rule monitoring network connections on port 443",
+      "A rule detecting new processes spawned by a web server process in a container",
+      "A rule monitoring file writes to /etc/ directories inside containers"
+    ],
+    "correct": [0, 2],
+    "explanation": "Falco can detect shell execution inside containers by matching process names (bash, sh, zsh) spawned in a container context. It can also detect when a web server process (like nginx or apache) spawns unexpected child processes, which is a strong indicator of compromise. Network monitoring on port 443 and /etc/ write monitoring serve different detection purposes.",
+    "multiple_choice": true,
+    "reference": "https://kubernetes.io/docs/tasks/debug/debug-cluster/audit/"
+  },
+  {
+    "id": 29,
+    "category": "Monitoring, Logging and Runtime Security",
+    "question": "What is the purpose of enabling audit logging on the Kubernetes API server?",
+    "answers": [
+      "To improve API server performance",
+      "To record a chronological set of security-relevant events documenting the sequence of actions in the cluster",
+      "To compress and archive old Kubernetes resources",
+      "To automatically remediate security violations"
+    ],
+    "correct": 1,
+    "explanation": "Kubernetes audit logging provides a chronological record of security-relevant events in the cluster. Each request to the API server generates an audit event that records who did what, when, and to which resource. This is essential for compliance, forensic investigation, and detecting suspicious API usage patterns.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/tasks/debug/debug-cluster/audit/"
+  },
+  {
+    "id": 30,
+    "category": "Monitoring, Logging and Runtime Security",
+    "question": "Which security practice involves ensuring that container images cannot be modified after deployment and any changes require redeployment?",
+    "answers": [
+      "Mutable infrastructure",
+      "Immutable infrastructure / immutable containers",
+      "Blue-green deployment",
+      "Canary deployment"
+    ],
+    "correct": 1,
+    "explanation": "Immutable infrastructure (and immutable containers) is the practice of ensuring that deployed containers are never modified at runtime. Any change requires building a new image and redeploying. This is enforced through read-only root filesystems, dropping write capabilities, and preventing exec into containers, making it harder for attackers to persist in compromised containers.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/containers/"
+  }
+]

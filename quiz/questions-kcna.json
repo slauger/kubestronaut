@@ -1,0 +1,302 @@
+[
+  {
+    "id": 1,
+    "category": "Kubernetes Fundamentals",
+    "question": "Which component of the Kubernetes control plane is responsible for storing all cluster data?",
+    "answers": ["kube-scheduler", "kube-apiserver", "etcd", "kube-controller-manager"],
+    "correct": 2,
+    "explanation": "etcd is a consistent and highly-available key-value store used as the backing store for all Kubernetes cluster data. It stores the entire state of the cluster including configuration data, state data, and metadata.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/overview/components/#etcd"
+  },
+  {
+    "id": 2,
+    "category": "Kubernetes Fundamentals",
+    "question": "What is the smallest deployable unit in Kubernetes?",
+    "answers": ["Container", "Pod", "Deployment", "ReplicaSet"],
+    "correct": 1,
+    "explanation": "A Pod is the smallest and simplest Kubernetes object. It represents a single instance of a running process in the cluster and can contain one or more containers that share storage and network resources.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/workloads/pods/"
+  },
+  {
+    "id": 3,
+    "category": "Kubernetes Fundamentals",
+    "question": "Which Kubernetes Service type exposes the service on each node's IP at a static port?",
+    "answers": ["ClusterIP", "NodePort", "LoadBalancer", "ExternalName"],
+    "correct": 1,
+    "explanation": "A NodePort service exposes the service on each node's IP at a static port (the NodePort). A ClusterIP service, to which the NodePort service routes, is automatically created. You can contact the NodePort service from outside the cluster by requesting <NodeIP>:<NodePort>.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport"
+  },
+  {
+    "id": 4,
+    "category": "Kubernetes Fundamentals",
+    "question": "What is the role of the kube-scheduler in Kubernetes?",
+    "answers": ["It manages the lifecycle of containers", "It assigns newly created Pods to nodes", "It serves the Kubernetes API", "It maintains network rules on nodes"],
+    "correct": 1,
+    "explanation": "The kube-scheduler watches for newly created Pods that have no node assigned and selects an appropriate node for them to run on. Scheduling decisions take into account resource requirements, hardware/software/policy constraints, affinity and anti-affinity specifications, data locality, and inter-workload interference.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/overview/components/#kube-scheduler"
+  },
+  {
+    "id": 5,
+    "category": "Kubernetes Fundamentals",
+    "question": "Which kubectl command is used to view the logs of a running Pod?",
+    "answers": ["kubectl describe pod", "kubectl get pod", "kubectl logs", "kubectl exec"],
+    "correct": 2,
+    "explanation": "The 'kubectl logs' command is used to print the logs for a container in a Pod. You can use 'kubectl logs <pod-name>' to view logs, optionally specifying a container with '-c' when the Pod has multiple containers.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/reference/kubectl/generated/kubectl_logs/"
+  },
+  {
+    "id": 6,
+    "category": "Kubernetes Fundamentals",
+    "question": "What is the purpose of Kubernetes namespaces?",
+    "answers": ["To isolate network traffic between Pods", "To provide a mechanism for isolating groups of resources within a single cluster", "To define resource quotas for individual Pods", "To encrypt data at rest in etcd"],
+    "correct": 1,
+    "explanation": "Namespaces provide a mechanism for isolating groups of resources within a single cluster. Names of resources need to be unique within a namespace, but not across namespaces. They are intended for use in environments with many users spread across multiple teams or projects.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/"
+  },
+  {
+    "id": 7,
+    "category": "Kubernetes Fundamentals",
+    "question": "Which Kubernetes object ensures that a specified number of Pod replicas are running at any given time?",
+    "answers": ["DaemonSet", "StatefulSet", "ReplicaSet", "Job"],
+    "correct": 2,
+    "explanation": "A ReplicaSet's purpose is to maintain a stable set of replica Pods running at any given time. It is often used to guarantee the availability of a specified number of identical Pods. In practice, Deployments are the recommended way to manage ReplicaSets.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/"
+  },
+  {
+    "id": 8,
+    "category": "Kubernetes Fundamentals",
+    "question": "Which component runs on every node in the cluster and ensures that containers are running in a Pod?",
+    "answers": ["kube-proxy", "kubelet", "kube-apiserver", "container runtime"],
+    "correct": 1,
+    "explanation": "The kubelet is an agent that runs on each node in the cluster. It ensures that containers described in PodSpecs are running and healthy. The kubelet takes a set of PodSpecs and ensures that the containers described in those PodSpecs are running and healthy.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/overview/components/#kubelet"
+  },
+  {
+    "id": 9,
+    "category": "Kubernetes Fundamentals",
+    "question": "What is the default Service type in Kubernetes when no type is specified?",
+    "answers": ["NodePort", "LoadBalancer", "ClusterIP", "ExternalName"],
+    "correct": 2,
+    "explanation": "ClusterIP is the default Kubernetes Service type. It exposes the service on a cluster-internal IP, making the service only reachable from within the cluster.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/services-networking/service/#type-clusterip"
+  },
+  {
+    "id": 10,
+    "category": "Kubernetes Fundamentals",
+    "question": "Which Kubernetes resource provides declarative updates for Pods and ReplicaSets?",
+    "answers": ["StatefulSet", "DaemonSet", "Deployment", "Job"],
+    "correct": 2,
+    "explanation": "A Deployment provides declarative updates for Pods and ReplicaSets. You describe a desired state in a Deployment, and the Deployment controller changes the actual state to the desired state at a controlled rate. Deployments manage ReplicaSets, which in turn manage Pods.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/workloads/controllers/deployment/"
+  },
+  {
+    "id": 11,
+    "category": "Kubernetes Fundamentals",
+    "question": "What does the kube-proxy component do on each node?",
+    "answers": ["Manages container images", "Maintains network rules that allow network communication to Pods", "Schedules Pods to nodes", "Stores cluster state data"],
+    "correct": 1,
+    "explanation": "kube-proxy is a network proxy that runs on each node in the cluster and maintains network rules on nodes. These network rules allow network communication to Pods from network sessions inside or outside of the cluster. kube-proxy uses the operating system packet filtering layer if available, otherwise it forwards the traffic itself.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/overview/components/#kube-proxy"
+  },
+  {
+    "id": 12,
+    "category": "Kubernetes Fundamentals",
+    "question": "Which Kubernetes object is used to store sensitive information such as passwords, tokens, and keys?",
+    "answers": ["ConfigMap", "Secret", "PersistentVolume", "ServiceAccount"],
+    "correct": 1,
+    "explanation": "A Kubernetes Secret is an object that stores sensitive data such as passwords, OAuth tokens, SSH keys, and TLS certificates. Secrets are similar to ConfigMaps but are intended to hold confidential data. By default, Secrets are stored unencrypted in etcd, but encryption at rest can be configured.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/configuration/secret/"
+  },
+  {
+    "id": 13,
+    "category": "Kubernetes Fundamentals",
+    "question": "Which of the following are valid uses for Kubernetes labels? (Select all that apply)",
+    "answers": ["Organizing and selecting subsets of objects", "Storing sensitive configuration data", "Enabling Service selectors to route traffic to Pods", "Defining resource CPU and memory limits"],
+    "correct": [0, 2],
+    "explanation": "Labels are key/value pairs attached to Kubernetes objects used for organizing and selecting subsets of objects. Services use label selectors to identify the set of Pods to route traffic to. Labels are not used for storing sensitive data (that is what Secrets are for) or for defining resource limits (that is done through resource requests and limits in the Pod spec).",
+    "multiple_choice": true,
+    "reference": "https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/"
+  },
+  {
+    "id": 14,
+    "category": "Container Orchestration",
+    "question": "What does the Open Container Initiative (OCI) define?",
+    "answers": ["Kubernetes networking standards", "Industry standards for container formats and runtimes", "Cloud provider APIs for container services", "Service mesh specifications"],
+    "correct": 1,
+    "explanation": "The Open Container Initiative (OCI) is a Linux Foundation project that defines industry standards around container image formats and runtimes. The OCI currently has three specifications: the Runtime Specification (runtime-spec), the Image Specification (image-spec), and the Distribution Specification (distribution-spec).",
+    "multiple_choice": false,
+    "reference": "https://opencontainers.org/"
+  },
+  {
+    "id": 15,
+    "category": "Container Orchestration",
+    "question": "Which of the following are CRI-compliant container runtimes that can be used with Kubernetes?",
+    "answers": ["containerd and CRI-O", "Docker Engine and Podman", "rkt and LXC", "VirtualBox and VMware"],
+    "correct": 0,
+    "explanation": "containerd and CRI-O are both CRI-compliant container runtimes designed to work with Kubernetes. The Container Runtime Interface (CRI) is the standard API that allows the kubelet to use different container runtimes. containerd and CRI-O both implement CRI natively.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/setup/production-environment/container-runtimes/"
+  },
+  {
+    "id": 16,
+    "category": "Container Orchestration",
+    "question": "What is the Container Runtime Interface (CRI) in Kubernetes?",
+    "answers": ["A CLI tool for managing containers", "A plugin interface that enables the kubelet to use different container runtimes", "A security standard for container images", "A monitoring framework for containers"],
+    "correct": 1,
+    "explanation": "The Container Runtime Interface (CRI) is a plugin interface that enables the kubelet to use a wide variety of container runtimes without needing to recompile the cluster components. CRI defines the main gRPC protocol for communication between the kubelet and the container runtime.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/architecture/cri/"
+  },
+  {
+    "id": 17,
+    "category": "Container Orchestration",
+    "question": "Which Kubernetes feature automatically replaces failed containers to maintain the desired state?",
+    "answers": ["Horizontal Pod Autoscaler", "Self-healing", "Pod Disruption Budget", "Resource Quota"],
+    "correct": 1,
+    "explanation": "Kubernetes provides self-healing capabilities: it restarts containers that fail, replaces containers, kills containers that don't respond to user-defined health checks, and doesn't advertise them to clients until they are ready to serve. This is a core feature of container orchestration in Kubernetes.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/overview/#why-you-need-kubernetes-and-what-can-it-do"
+  },
+  {
+    "id": 18,
+    "category": "Container Orchestration",
+    "question": "What is the purpose of the Horizontal Pod Autoscaler (HPA) in Kubernetes?",
+    "answers": ["To add more nodes to the cluster", "To automatically scale the number of Pod replicas based on observed metrics", "To vertically increase CPU and memory of existing Pods", "To distribute Pods evenly across namespaces"],
+    "correct": 1,
+    "explanation": "The Horizontal Pod Autoscaler automatically scales the number of Pod replicas in a Deployment, ReplicaSet, or StatefulSet based on observed CPU utilization, memory utilization, or custom metrics. It adjusts the replica count to match the target metric value.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/"
+  },
+  {
+    "id": 19,
+    "category": "Container Orchestration",
+    "question": "Which Kubernetes workload resource ensures that a copy of a Pod runs on all (or some) nodes?",
+    "answers": ["Deployment", "StatefulSet", "DaemonSet", "ReplicaSet"],
+    "correct": 2,
+    "explanation": "A DaemonSet ensures that all (or some) nodes run a copy of a Pod. As nodes are added to the cluster, Pods are added to them. As nodes are removed, those Pods are garbage collected. Common use cases include running cluster storage daemons, log collection daemons, and node monitoring daemons on every node.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/"
+  },
+  {
+    "id": 20,
+    "category": "Container Orchestration",
+    "question": "Which of the following are valid Kubernetes liveness probe mechanisms?",
+    "answers": ["HTTP GET, TCP Socket, and gRPC", "SSH, FTP, and SMTP", "DNS lookup, ICMP ping, and traceroute", "SNMP, Syslog, and NetFlow"],
+    "correct": 0,
+    "explanation": "Kubernetes supports several types of probe mechanisms for liveness, readiness, and startup probes: HTTP GET requests, TCP socket checks, gRPC health checks, and exec commands. These probes allow the kubelet to check whether a container is still running and healthy.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/"
+  },
+  {
+    "id": 21,
+    "category": "Container Orchestration",
+    "question": "Which of the following are responsibilities of a container runtime in Kubernetes? (Select all that apply)",
+    "answers": ["Pulling container images from registries", "Scheduling Pods to nodes", "Running containers on the host", "Managing the cluster-wide network policy"],
+    "correct": [0, 2],
+    "explanation": "A container runtime is responsible for pulling container images from registries and running containers on the host operating system. Scheduling Pods to nodes is the responsibility of the kube-scheduler, and managing cluster-wide network policies is handled by network policy controllers, not the container runtime.",
+    "multiple_choice": true,
+    "reference": "https://kubernetes.io/docs/concepts/containers/#container-runtimes"
+  },
+  {
+    "id": 22,
+    "category": "Cloud Native Architecture",
+    "question": "What is the Cloud Native Computing Foundation (CNCF)?",
+    "answers": ["A cloud service provider", "A vendor-neutral foundation that hosts projects critical to the cloud native ecosystem", "A Kubernetes distribution maintained by Google", "A certification body for cloud architects"],
+    "correct": 1,
+    "explanation": "The Cloud Native Computing Foundation (CNCF) is a vendor-neutral foundation under the Linux Foundation that hosts and nurtures open-source projects critical to the cloud native technology stack. CNCF hosts projects like Kubernetes, Prometheus, Envoy, and many others across graduated, incubating, and sandbox maturity levels.",
+    "multiple_choice": false,
+    "reference": "https://www.cncf.io/about/who-we-are/"
+  },
+  {
+    "id": 23,
+    "category": "Cloud Native Architecture",
+    "question": "Which of the following are principles of the twelve-factor app methodology? (Select all that apply)",
+    "answers": ["Store configuration in the environment", "Use monolithic architecture for all services", "Treat backing services as attached resources", "Maximize divergence between development and production"],
+    "correct": [0, 2],
+    "explanation": "The twelve-factor app methodology includes storing configuration in the environment (Factor III) and treating backing services as attached resources (Factor IV). It advocates for microservices rather than monolithic architecture, and calls for keeping development, staging, and production as similar as possible (dev/prod parity, Factor X), not maximizing divergence.",
+    "multiple_choice": true,
+    "reference": "https://12factor.net/"
+  },
+  {
+    "id": 24,
+    "category": "Cloud Native Architecture",
+    "question": "What are the CNCF project maturity levels?",
+    "answers": ["Alpha, Beta, Stable", "Sandbox, Incubating, Graduated", "Development, Testing, Production", "Draft, Review, Published"],
+    "correct": 1,
+    "explanation": "CNCF projects go through three maturity levels: Sandbox (early stage, experimental projects), Incubating (projects that have demonstrated growing adoption and a healthy rate of changes), and Graduated (projects that are considered stable and used widely in production). Each level has specific criteria that projects must meet.",
+    "multiple_choice": false,
+    "reference": "https://www.cncf.io/projects/"
+  },
+  {
+    "id": 25,
+    "category": "Cloud Native Architecture",
+    "question": "What is the purpose of Kubernetes Special Interest Groups (SIGs)?",
+    "answers": ["They are commercial support teams for Kubernetes", "They are community groups that own and develop specific areas of the Kubernetes project", "They are security incident response teams", "They are groups that certify Kubernetes distributions"],
+    "correct": 1,
+    "explanation": "Kubernetes Special Interest Groups (SIGs) are persistent open groups that focus on specific parts of the Kubernetes project. SIGs are responsible for the design, development, and maintenance of their respective areas. Examples include SIG-Network, SIG-Storage, SIG-Auth, and SIG-Node. They are community-driven and open to participation.",
+    "multiple_choice": false,
+    "reference": "https://github.com/kubernetes/community/blob/master/sig-list.md"
+  },
+  {
+    "id": 26,
+    "category": "Cloud Native Application Delivery",
+    "question": "What is GitOps?",
+    "answers": ["A Git branching strategy for monorepos", "A practice where Git repositories serve as the single source of truth for declarative infrastructure and application configuration", "A tool for automatically merging pull requests", "A GitHub-specific CI/CD platform"],
+    "correct": 1,
+    "explanation": "GitOps is an operational framework that uses Git repositories as the single source of truth for declarative infrastructure and application configuration. Changes to the desired state are made via Git commits, and an automated process ensures the actual state matches the desired state defined in Git. Tools like Argo CD and Flux implement the GitOps approach.",
+    "multiple_choice": false,
+    "reference": "https://www.cncf.io/glossary/gitops/"
+  },
+  {
+    "id": 27,
+    "category": "Cloud Native Application Delivery",
+    "question": "What is Helm in the Kubernetes ecosystem?",
+    "answers": ["A container runtime for Kubernetes", "A package manager for Kubernetes that uses charts to define, install, and upgrade applications", "A monitoring tool for Kubernetes clusters", "A network plugin for Kubernetes"],
+    "correct": 1,
+    "explanation": "Helm is the package manager for Kubernetes. It uses a packaging format called charts, which are collections of files that describe a related set of Kubernetes resources. Helm helps you manage Kubernetes applications by defining, installing, and upgrading even the most complex Kubernetes applications. Helm is a CNCF graduated project.",
+    "multiple_choice": false,
+    "reference": "https://helm.sh/docs/"
+  },
+  {
+    "id": 28,
+    "category": "Cloud Native Application Delivery",
+    "question": "Which of the following are CNCF projects used for implementing GitOps? (Select all that apply)",
+    "answers": ["Argo CD", "Jenkins", "Flux", "Ansible"],
+    "correct": [0, 2],
+    "explanation": "Argo CD and Flux are both CNCF projects specifically designed for implementing GitOps workflows in Kubernetes. Argo CD is a CNCF graduated project and Flux is a CNCF graduated project, both providing declarative, GitOps-based continuous delivery for Kubernetes. Jenkins and Ansible are not CNCF projects and are not GitOps-specific tools.",
+    "multiple_choice": true,
+    "reference": "https://www.cncf.io/projects/"
+  },
+  {
+    "id": 29,
+    "category": "Cloud Native Application Delivery",
+    "question": "What is Kustomize used for in Kubernetes?",
+    "answers": ["Building container images", "Template-free customization of Kubernetes resource configurations", "Managing Kubernetes cluster upgrades", "Monitoring application performance"],
+    "correct": 1,
+    "explanation": "Kustomize is a tool for customizing Kubernetes resource configurations without using templates. It lets you customize raw, template-free YAML files for multiple purposes, leaving the original YAML untouched and usable as-is. Kustomize is built into kubectl as 'kubectl apply -k' and uses a kustomization.yaml file to define customizations like patches, overlays, and transformations.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/tasks/manage-kubernetes-objects/kustomization/"
+  },
+  {
+    "id": 30,
+    "category": "Cloud Native Application Delivery",
+    "question": "Which of the following are key components of a CI/CD pipeline for Kubernetes applications? (Select all that apply)",
+    "answers": ["Automated testing of application code", "Manual approval for every single code change before it can be compiled", "Building and pushing container images to a registry", "Deploying updated manifests to the Kubernetes cluster"],
+    "correct": [0, 2, 3],
+    "explanation": "A CI/CD pipeline for Kubernetes applications typically includes automated testing of application code (CI), building and pushing container images to a container registry, and deploying updated Kubernetes manifests to the cluster (CD). While manual approvals may be part of some workflows, requiring manual approval for every code change before compilation contradicts the automated nature of CI/CD.",
+    "multiple_choice": true,
+    "reference": "https://kubernetes.io/docs/concepts/overview/"
+  }
+]

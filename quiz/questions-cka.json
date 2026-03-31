@@ -1,0 +1,392 @@
+[
+  {
+    "id": 1,
+    "category": "Cluster Architecture, Installation & Configuration",
+    "question": "Which component is responsible for persisting all cluster state in a Kubernetes cluster?",
+    "answers": ["kube-apiserver", "etcd", "kube-controller-manager", "kube-scheduler"],
+    "correct": 1,
+    "explanation": "etcd is a consistent and highly-available key-value store used as the backing store for all Kubernetes cluster data. All cluster state, including nodes, pods, configs, secrets, and service accounts, is stored in etcd.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/overview/components/#etcd"
+  },
+  {
+    "id": 2,
+    "category": "Cluster Architecture, Installation & Configuration",
+    "question": "When upgrading a Kubernetes cluster with kubeadm, what is the correct order of operations?",
+    "answers": [
+      "Upgrade worker nodes, then control plane nodes",
+      "Upgrade control plane nodes first, then worker nodes",
+      "Upgrade all nodes simultaneously",
+      "Upgrade etcd last after all nodes"
+    ],
+    "correct": 1,
+    "explanation": "When upgrading a kubeadm cluster, you must upgrade the control plane nodes first, then upgrade the worker nodes. The control plane components must be at the newer version before the worker nodes to ensure API compatibility.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade/"
+  },
+  {
+    "id": 3,
+    "category": "Cluster Architecture, Installation & Configuration",
+    "question": "Which command creates a snapshot of the etcd database for backup purposes?",
+    "answers": [
+      "etcdctl snapshot create",
+      "etcdctl backup create",
+      "kubectl etcd backup",
+      "etcdctl snapshot save"
+    ],
+    "correct": 3,
+    "explanation": "The correct command is 'etcdctl snapshot save <filename>'. This creates a point-in-time snapshot of the etcd database that can be used for disaster recovery. The command requires the etcd endpoint, CA certificate, client certificate, and client key to authenticate.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/tasks/administer-cluster/configure-upgrade-etcd/#snapshot-using-etcdctl-options"
+  },
+  {
+    "id": 4,
+    "category": "Cluster Architecture, Installation & Configuration",
+    "question": "What is the purpose of a ClusterRole in Kubernetes RBAC?",
+    "answers": [
+      "It defines permissions scoped to a specific namespace",
+      "It defines cluster-wide permissions or permissions across all namespaces",
+      "It assigns users to groups",
+      "It creates service accounts automatically"
+    ],
+    "correct": 1,
+    "explanation": "A ClusterRole defines permissions at the cluster level. Unlike a Role, which is namespace-scoped, a ClusterRole can grant access to cluster-scoped resources (like nodes), non-resource endpoints, or can be used across all namespaces when bound with a ClusterRoleBinding.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/reference/access-authn-authz/rbac/#role-and-clusterrole"
+  },
+  {
+    "id": 5,
+    "category": "Cluster Architecture, Installation & Configuration",
+    "question": "Which of the following are required components on every worker node in a Kubernetes cluster? (Select all that apply)",
+    "answers": ["kubelet", "kube-proxy", "kube-scheduler", "container runtime"],
+    "correct": [0, 1, 3],
+    "explanation": "Every worker node must run the kubelet (which manages pods and communicates with the API server), kube-proxy (which maintains network rules for service connectivity), and a container runtime (such as containerd or CRI-O) to run containers. The kube-scheduler runs only on control plane nodes.",
+    "multiple_choice": true,
+    "reference": "https://kubernetes.io/docs/concepts/overview/components/#node-components"
+  },
+  {
+    "id": 6,
+    "category": "Cluster Architecture, Installation & Configuration",
+    "question": "What does the command 'kubeadm token create --print-join-command' do?",
+    "answers": [
+      "Creates a new cluster from scratch",
+      "Generates a bootstrap token and prints the full kubeadm join command for adding nodes",
+      "Resets the cluster token for all existing nodes",
+      "Prints the current cluster configuration"
+    ],
+    "correct": 1,
+    "explanation": "This command creates a new bootstrap token and prints the complete 'kubeadm join' command, including the token and the CA certificate hash. This join command can then be used on a new node to join it to the existing cluster.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-token/"
+  },
+  {
+    "id": 7,
+    "category": "Cluster Architecture, Installation & Configuration",
+    "question": "In a highly available Kubernetes cluster, what is the minimum recommended number of etcd members to maintain quorum?",
+    "answers": ["1", "2", "3", "4"],
+    "correct": 2,
+    "explanation": "A minimum of 3 etcd members is recommended for high availability. etcd uses the Raft consensus algorithm, which requires a majority (quorum) of members to agree on state changes. With 3 members, the cluster can tolerate the failure of 1 member while still maintaining quorum (2 out of 3).",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/ha-topology/"
+  },
+  {
+    "id": 8,
+    "category": "Cluster Architecture, Installation & Configuration",
+    "question": "Which of the following are valid subjects that can be referenced in a RoleBinding or ClusterRoleBinding? (Select all that apply)",
+    "answers": ["User", "Group", "ServiceAccount", "Pod"],
+    "correct": [0, 1, 2],
+    "explanation": "RoleBindings and ClusterRoleBindings can reference three types of subjects: User, Group, and ServiceAccount. Pods are not valid subjects in RBAC bindings. Service accounts are used to give pods an identity for RBAC purposes.",
+    "multiple_choice": true,
+    "reference": "https://kubernetes.io/docs/reference/access-authn-authz/rbac/#rolebinding-and-clusterrolebinding"
+  },
+  {
+    "id": 9,
+    "category": "Workloads & Scheduling",
+    "question": "What is the effect of applying a taint with the effect 'NoSchedule' to a node?",
+    "answers": [
+      "All existing pods on the node are immediately evicted",
+      "New pods without a matching toleration will not be scheduled on the node",
+      "The node is cordoned and drained automatically",
+      "Only system pods can run on the node"
+    ],
+    "correct": 1,
+    "explanation": "A taint with the NoSchedule effect prevents new pods from being scheduled on the node unless they have a matching toleration. Existing pods already running on the node are not affected. To evict existing pods, the NoExecute effect would be used instead.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/"
+  },
+  {
+    "id": 10,
+    "category": "Workloads & Scheduling",
+    "question": "Which workload resource ensures that a copy of a pod runs on all (or a subset of) nodes in the cluster?",
+    "answers": ["Deployment", "StatefulSet", "DaemonSet", "ReplicaSet"],
+    "correct": 2,
+    "explanation": "A DaemonSet ensures that all (or some) nodes run a copy of a pod. As nodes are added to the cluster, pods are automatically added to them. Common use cases include running log collectors, monitoring agents, or network plugins on every node.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/"
+  },
+  {
+    "id": 11,
+    "category": "Workloads & Scheduling",
+    "question": "What is the default restart policy for a pod?",
+    "answers": ["Never", "OnFailure", "Always", "Unless-Stopped"],
+    "correct": 2,
+    "explanation": "The default restart policy for a pod is 'Always'. This means the kubelet will automatically restart containers in the pod whenever they exit, regardless of the exit code. Other valid options are 'OnFailure' (restart only on non-zero exit) and 'Never' (never restart).",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#restart-policy"
+  },
+  {
+    "id": 12,
+    "category": "Workloads & Scheduling",
+    "question": "What guarantees does a StatefulSet provide that a Deployment does not?",
+    "answers": [
+      "Automatic horizontal scaling based on CPU usage",
+      "Stable, unique network identifiers and persistent storage per pod",
+      "Rolling updates with zero downtime",
+      "Automatic bin packing of pods across nodes"
+    ],
+    "correct": 1,
+    "explanation": "StatefulSets provide guarantees about the ordering and uniqueness of pods. Each pod gets a stable hostname (e.g., web-0, web-1), stable persistent storage via PersistentVolumeClaims, and ordered, graceful deployment and scaling. These properties are essential for stateful applications like databases.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/"
+  },
+  {
+    "id": 13,
+    "category": "Services & Networking",
+    "question": "Which Service type exposes the service on each node's IP at a static port?",
+    "answers": ["ClusterIP", "NodePort", "LoadBalancer", "ExternalName"],
+    "correct": 1,
+    "explanation": "A NodePort service exposes the service on each node's IP at a static port (the NodePort). A ClusterIP service is automatically created, and the NodePort service routes to it. You can access a NodePort service from outside the cluster by requesting <NodeIP>:<NodePort>.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport"
+  },
+  {
+    "id": 14,
+    "category": "Services & Networking",
+    "question": "What is the default service type when creating a Kubernetes Service without specifying a type?",
+    "answers": ["NodePort", "LoadBalancer", "ClusterIP", "ExternalName"],
+    "correct": 2,
+    "explanation": "ClusterIP is the default service type. It exposes the service on an internal IP in the cluster, making the service only reachable from within the cluster. This is appropriate for internal communication between services.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/services-networking/service/#type-clusterip"
+  },
+  {
+    "id": 15,
+    "category": "Services & Networking",
+    "question": "What does a NetworkPolicy with an empty podSelector ({}) in its spec apply to?",
+    "answers": [
+      "No pods in the namespace",
+      "Only pods with no labels",
+      "All pods in the namespace",
+      "All pods in all namespaces"
+    ],
+    "correct": 2,
+    "explanation": "A NetworkPolicy with an empty podSelector ({}) selects all pods in the namespace where the NetworkPolicy is created. This is commonly used to create default deny policies that restrict all ingress or egress traffic for all pods in a namespace.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/services-networking/network-policies/#default-deny-all-ingress-traffic"
+  },
+  {
+    "id": 16,
+    "category": "Services & Networking",
+    "question": "What is the fully qualified domain name (FQDN) format for a Service in Kubernetes cluster DNS?",
+    "answers": [
+      "<service-name>.<pod-name>.svc.cluster.local",
+      "<service-name>.<namespace>.svc.cluster.local",
+      "<namespace>.<service-name>.svc.cluster.local",
+      "<service-name>.svc.<namespace>.cluster.local"
+    ],
+    "correct": 1,
+    "explanation": "The FQDN for a Kubernetes service follows the format <service-name>.<namespace>.svc.cluster.local. For example, a service named 'my-svc' in the 'default' namespace would be accessible at 'my-svc.default.svc.cluster.local'. Within the same namespace, you can simply use the service name.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#services"
+  },
+  {
+    "id": 17,
+    "category": "Services & Networking",
+    "question": "Which resource is used to manage external access to services in a cluster, typically via HTTP/HTTPS routing rules?",
+    "answers": ["Service of type LoadBalancer", "Ingress", "NetworkPolicy", "Endpoint"],
+    "correct": 1,
+    "explanation": "An Ingress resource manages external access to services in a cluster, typically HTTP. Ingress can provide load balancing, SSL termination, and name-based virtual hosting. An Ingress controller (like NGINX Ingress Controller) is required to fulfill the Ingress rules.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/services-networking/ingress/"
+  },
+  {
+    "id": 18,
+    "category": "Services & Networking",
+    "question": "Which of the following are valid policy types in a NetworkPolicy? (Select all that apply)",
+    "answers": ["Ingress", "Egress", "Both Ingress and Egress simultaneously", "Forward"],
+    "correct": [0, 1, 2],
+    "explanation": "NetworkPolicy supports Ingress and Egress as policy types, and you can specify both simultaneously in a single NetworkPolicy resource. There is no 'Forward' policy type. When neither is specified, Ingress is assumed by default.",
+    "multiple_choice": true,
+    "reference": "https://kubernetes.io/docs/concepts/services-networking/network-policies/#behavior-of-to-and-from-selectors"
+  },
+  {
+    "id": 19,
+    "category": "Storage",
+    "question": "Which access mode allows a PersistentVolume to be mounted as read-write by a single node?",
+    "answers": ["ReadOnlyMany (ROX)", "ReadWriteMany (RWX)", "ReadWriteOnce (RWO)", "ReadWriteOncePod (RWOP)"],
+    "correct": 2,
+    "explanation": "ReadWriteOnce (RWO) allows the volume to be mounted as read-write by a single node. ReadOnlyMany (ROX) allows read-only access by many nodes, ReadWriteMany (RWX) allows read-write access by many nodes, and ReadWriteOncePod (RWOP) ensures only a single pod can mount the volume as read-write.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/storage/persistent-volumes/#access-modes"
+  },
+  {
+    "id": 20,
+    "category": "Storage",
+    "question": "What is the reclaim policy that causes a PersistentVolume to be deleted when its PersistentVolumeClaim is deleted?",
+    "answers": ["Retain", "Recycle", "Delete", "Archive"],
+    "correct": 2,
+    "explanation": "The 'Delete' reclaim policy causes the PersistentVolume and its associated storage asset (such as an EBS volume or GCE PD) to be deleted when the PersistentVolumeClaim is deleted. 'Retain' keeps the PV for manual reclamation. 'Recycle' is deprecated. 'Archive' is not a valid reclaim policy.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/storage/persistent-volumes/#reclaiming"
+  },
+  {
+    "id": 21,
+    "category": "Storage",
+    "question": "What is the role of a StorageClass in Kubernetes?",
+    "answers": [
+      "It limits the total amount of storage a namespace can consume",
+      "It provides a way to describe different classes of storage and enables dynamic provisioning of PersistentVolumes",
+      "It encrypts data stored in PersistentVolumes",
+      "It backs up PersistentVolume data on a schedule"
+    ],
+    "correct": 1,
+    "explanation": "A StorageClass provides a way for administrators to describe the classes of storage they offer. Different classes might map to quality-of-service levels, backup policies, or provisioner types. StorageClasses enable dynamic provisioning of PersistentVolumes when a PersistentVolumeClaim requests storage.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/storage/storage-classes/"
+  },
+  {
+    "id": 22,
+    "category": "Troubleshooting",
+    "question": "A pod is stuck in the 'Pending' state. Which of the following could be the cause?",
+    "answers": [
+      "The container image was pulled successfully",
+      "Insufficient CPU or memory resources on available nodes",
+      "The pod's readiness probe is failing",
+      "The application inside the container crashed"
+    ],
+    "correct": 1,
+    "explanation": "A pod in the 'Pending' state has not yet been scheduled to a node. This commonly occurs when there are insufficient resources (CPU, memory) on any available node to meet the pod's resource requests. Readiness probe failures and application crashes would result in a 'Running' pod with a not-ready or restarting container, not a 'Pending' state.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/scheduling-eviction/pod-scheduling-readiness/"
+  },
+  {
+    "id": 23,
+    "category": "Troubleshooting",
+    "question": "Which kubectl command shows the events and conditions for a specific pod, including reasons for scheduling failures?",
+    "answers": [
+      "kubectl get pod <pod-name>",
+      "kubectl logs <pod-name>",
+      "kubectl describe pod <pod-name>",
+      "kubectl top pod <pod-name>"
+    ],
+    "correct": 2,
+    "explanation": "'kubectl describe pod <pod-name>' provides detailed information about a pod including its events, conditions, container states, resource requests/limits, and scheduling information. This is typically the first command to run when troubleshooting pod issues, as the Events section often reveals the root cause.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/tasks/debug/debug-application/debug-pods/"
+  },
+  {
+    "id": 24,
+    "category": "Troubleshooting",
+    "question": "A pod is in the 'CrashLoopBackOff' state. What does this indicate?",
+    "answers": [
+      "The pod is waiting to be scheduled",
+      "The container keeps crashing and Kubernetes is applying an exponential back-off delay before restarting it",
+      "The pod's image cannot be pulled from the registry",
+      "The node running the pod has become unreachable"
+    ],
+    "correct": 1,
+    "explanation": "CrashLoopBackOff means the container in the pod keeps crashing (exiting with an error), and Kubernetes is restarting it with an increasing delay (exponential back-off, capped at 5 minutes). Common causes include application errors, misconfiguration, missing dependencies, or incorrect commands.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#container-restart-policy"
+  },
+  {
+    "id": 25,
+    "category": "Troubleshooting",
+    "question": "Which command is used to check the logs of the kube-apiserver when it runs as a static pod?",
+    "answers": [
+      "systemctl status kube-apiserver",
+      "kubectl logs -n kube-system kube-apiserver-<node-name>",
+      "journalctl -u kube-apiserver",
+      "docker logs kube-apiserver"
+    ],
+    "correct": 1,
+    "explanation": "When the kube-apiserver runs as a static pod (which is the case in kubeadm-managed clusters), its logs can be viewed using 'kubectl logs -n kube-system kube-apiserver-<node-name>'. Static pod names include the node name as a suffix. If kubectl is unavailable, container runtime commands or crictl logs can be used as alternatives.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/tasks/debug/debug-cluster/"
+  },
+  {
+    "id": 26,
+    "category": "Troubleshooting",
+    "question": "A node shows the status 'NotReady'. Which of the following should you check first? (Select all that apply)",
+    "answers": [
+      "Whether the kubelet service is running on the node",
+      "Whether the node has sufficient disk space and memory",
+      "Whether the container runtime is functioning correctly",
+      "Whether the kube-scheduler is configured properly"
+    ],
+    "correct": [0, 1, 2],
+    "explanation": "When a node is NotReady, you should check the kubelet service status (it reports node conditions to the API server), disk space and memory (resource pressure causes NotReady conditions), and the container runtime (kubelet depends on it). The kube-scheduler runs on the control plane and does not directly affect node readiness.",
+    "multiple_choice": true,
+    "reference": "https://kubernetes.io/docs/tasks/debug/debug-cluster/troubleshoot-node-health/"
+  },
+  {
+    "id": 27,
+    "category": "Troubleshooting",
+    "question": "What does the 'ImagePullBackOff' status indicate for a container?",
+    "answers": [
+      "The container image is too large to download",
+      "Kubernetes cannot pull the container image, possibly due to a wrong image name, tag, or missing credentials",
+      "The container image has been pulled but has a corrupted filesystem",
+      "The container runtime does not support the image format"
+    ],
+    "correct": 1,
+    "explanation": "ImagePullBackOff indicates that Kubernetes has repeatedly failed to pull the container image and is now waiting with an exponential back-off before retrying. Common causes include incorrect image name or tag, private registry without proper imagePullSecrets, network connectivity issues, or the image not existing in the registry.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/containers/images/#imagepullbackoff"
+  },
+  {
+    "id": 28,
+    "category": "Troubleshooting",
+    "question": "Which kubectl command can be used to execute a command interactively inside a running container for debugging?",
+    "answers": [
+      "kubectl run -it --rm debug --image=busybox -- sh",
+      "kubectl exec -it <pod-name> -- /bin/sh",
+      "kubectl attach <pod-name>",
+      "kubectl debug <pod-name>"
+    ],
+    "correct": 1,
+    "explanation": "'kubectl exec -it <pod-name> -- /bin/sh' executes an interactive shell session inside a running container. The -i flag passes stdin and -t allocates a TTY. This is one of the most common troubleshooting techniques for inspecting the container's filesystem, network, and running processes.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/tasks/debug/debug-application/get-shell-running-container/"
+  },
+  {
+    "id": 29,
+    "category": "Troubleshooting",
+    "question": "You notice a Service is not routing traffic to its pods. Which of the following should you verify? (Select all that apply)",
+    "answers": [
+      "The Service selector labels match the pod labels",
+      "The Endpoints object has pod IP addresses listed",
+      "The target pod containers are passing their readiness probes",
+      "The pod containers have the latest image tag"
+    ],
+    "correct": [0, 1, 2],
+    "explanation": "When a Service is not routing traffic, check that the Service selector matches the pod labels (mismatched labels mean no endpoints), verify the Endpoints object has pod IPs (kubectl get endpoints <svc-name>), and ensure pods pass readiness probes (unready pods are removed from Endpoints). The image tag is unrelated to service routing.",
+    "multiple_choice": true,
+    "reference": "https://kubernetes.io/docs/tasks/debug/debug-application/debug-service/"
+  },
+  {
+    "id": 30,
+    "category": "Troubleshooting",
+    "question": "What is the purpose of the 'kubectl drain' command when troubleshooting or maintaining a node?",
+    "answers": [
+      "It deletes the node from the cluster permanently",
+      "It removes all data from the node's local storage",
+      "It safely evicts all pods from the node and marks it as unschedulable",
+      "It restarts all pods on the node"
+    ],
+    "correct": 2,
+    "explanation": "'kubectl drain' safely evicts all pods from a node and marks the node as unschedulable (cordoned). This is used before performing maintenance on a node, such as kernel upgrades or hardware repairs. DaemonSet-managed pods are ignored by default unless --ignore-daemonsets is specified. The node is not deleted and can be uncordoned later with 'kubectl uncordon'.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/tasks/administer-cluster/safely-drain-node/"
+  }
+]

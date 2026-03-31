@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kubestronaut Exam Simulator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #3f51b5 0%, #1a237e 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        select, input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        select:focus, input[type="number"]:focus {
+            outline: none;
+            border-color: #3f51b5;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            flex: 1;
+            min-width: 120px;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #3f51b5;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #303f9f;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+
+        .btn-correct {
+            background: #4caf50;
+            color: white;
+        }
+
+        .btn-correct:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+
+        .btn-wrong {
+            background: #f44336;
+            color: white;
+        }
+
+        .btn-wrong:hover {
+            background: #da190b;
+            transform: translateY(-2px);
+        }
+
+        .quiz-card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+
+        .question-number {
+            color: #3f51b5;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .category-badge {
+            display: inline-block;
+            background: #e8eaf6;
+            color: #3f51b5;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-bottom: 15px;
+        }
+
+        .question {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .answer-option:hover {
+            background: #e8eaf6 !important;
+            border-color: #3f51b5 !important;
+        }
+
+        .answer-reveal {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .progress {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .progress-text {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .progress-bar-container {
+            flex: 1;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            margin: 0 15px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #3f51b5 0%, #1a237e 100%);
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+
+        .results {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+
+        .results h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .score {
+            font-size: 48px;
+            font-weight: 700;
+            color: #3f51b5;
+            margin: 20px 0;
+        }
+
+        .timer {
+            background: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .timer-label {
+            font-size: 12px;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .timer-text {
+            font-size: 24px;
+            font-weight: 600;
+            color: #666;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .exam-mode-info {
+            background: #e8eaf6;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #3f51b5;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 600px) {
+            .button-group {
+                flex-direction: column;
+            }
+
+            button {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Kubestronaut Exam Simulator</h1>
+            <p class="subtitle">Interactive exam preparation for CNCF Kubernetes certifications</p>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls" id="controls">
+            <!-- Progress Info -->
+            <div id="progressInfo"></div>
+
+            <div class="control-group">
+                <label for="catalogFilter">Certification:</label>
+                <select id="catalogFilter" onchange="loadQuestions()">
+                    <option value="questions-kcna.json">KCNA - Kubernetes and Cloud Native Associate</option>
+                    <option value="questions-kcsa.json">KCSA - Kubernetes and Cloud Native Security Associate</option>
+                    <option value="questions-cka.json">CKA - Certified Kubernetes Administrator</option>
+                    <option value="questions-ckad.json">CKAD - Certified Kubernetes Application Developer</option>
+                    <option value="questions-cks.json">CKS - Certified Kubernetes Security Specialist</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="questionCount">Number of questions:</label>
+                <input type="number" id="questionCount" min="1" max="60" value="10">
+            </div>
+
+            <div class="control-group">
+                <label>
+                    <input type="checkbox" id="randomize" checked> Shuffle questions
+                </label>
+            </div>
+
+            <div class="control-group">
+                <label>
+                    <input type="checkbox" id="randomizeAnswers" checked> Shuffle answers
+                </label>
+            </div>
+
+            <div class="control-group">
+                <label>
+                    <input type="checkbox" id="examMode"> Exam mode (timed, pass/fail)
+                </label>
+                <div class="exam-mode-info">Enables countdown timer scaled to question count. Results show pass/fail against official passing score.</div>
+            </div>
+
+            <div class="button-group">
+                <button class="btn-primary" onclick="startQuiz()">Start Quiz</button>
+                <button class="btn-primary" onclick="startQuizNewOnly()">New Questions Only</button>
+            </div>
+
+            <div class="button-group" style="margin-top: 15px;">
+                <button class="btn-wrong" onclick="startQuizWrongOnly()">Review Incorrect</button>
+                <button class="btn-secondary" onclick="clearProgress()">Reset Progress</button>
+            </div>
+
+            <div class="button-group" style="margin-top: 15px;">
+                <button class="btn-secondary" onclick="window.location.href='browse.html'">Browse All Questions</button>
+                <button class="btn-secondary" onclick="window.location.href='../'">Back to Study Guide</button>
+            </div>
+        </div>
+
+        <!-- Timer -->
+        <div class="timer hidden" id="timer">
+            <div class="timer-label">Time Remaining</div>
+            <div class="timer-text" id="timerText">--:--</div>
+        </div>
+
+        <!-- Quiz Card -->
+        <div class="quiz-card hidden" id="quizCard">
+            <div class="question-number" id="questionNumber"></div>
+            <div class="category-badge" id="category"></div>
+            <div class="question" id="question"></div>
+            <div id="feedbackSection" class="hidden"></div>
+            <div class="answer-reveal hidden" id="answerReveal"></div>
+        </div>
+
+        <!-- Progress -->
+        <div class="progress hidden" id="progress">
+            <div class="progress-text">Progress:</div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <div class="progress-text" id="progressText"></div>
+        </div>
+
+        <!-- Results -->
+        <div class="results hidden" id="results">
+            <h2>Quiz Complete!</h2>
+            <div class="score" id="score"></div>
+            <button class="btn-primary" onclick="resetQuiz()">Start New Quiz</button>
+        </div>
+    </div>
+
+    <script src="quiz.js"></script>
+</body>
+</html>
