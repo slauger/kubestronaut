@@ -1,9 +1,9 @@
-site_name: Kubestronaut Study Guide
+site_name: Golden Kubestronaut Study Guide
 site_url: https://slauger.github.io/kubestronaut
 site_author: Simon Lauger
 site_description: >-
   Study guide and exam preparation resources for the
-  CNCF Kubestronaut certification path
+  CNCF Golden Kubestronaut certification path — all 16 certifications
 
 repo_name: slauger/kubestronaut
 repo_url: https://github.com/slauger/kubestronaut
@@ -37,8 +37,7 @@ theme:
     - content.tooltips
     - toc.follow
   palette:
-    - media: "(prefers-color-scheme: light)"
-      scheme: default
+    - scheme: default
       primary: indigo
       accent: indigo
       toggle:
@@ -113,41 +112,54 @@ extra_css:
 
 nav:
   - Home: index.md
-  - KCNA:
-    - kcna/index.md
-    - Kubernetes Fundamentals: kcna/kubernetes-fundamentals.md
-    - Container Orchestration: kcna/container-orchestration.md
-    - Cloud Native Architecture: kcna/cloud-native-architecture.md
-    - Cloud Native Delivery: kcna/cloud-native-delivery.md
-  - KCSA:
-    - kcsa/index.md
-    - Cloud Native Security: kcsa/cloud-native-security.md
-    - Cluster Component Security: kcsa/cluster-component-security.md
-    - Security Fundamentals: kcsa/security-fundamentals.md
-    - Threat Model: kcsa/threat-model.md
-    - Platform Security: kcsa/platform-security.md
-    - Compliance: kcsa/compliance.md
-  - CKA:
-    - cka/index.md
-    - Cluster Architecture: cka/cluster-architecture.md
-    - Workloads & Scheduling: cka/workloads-scheduling.md
-    - Services & Networking: cka/services-networking.md
-    - Storage: cka/storage.md
-    - Troubleshooting: cka/troubleshooting.md
-  - CKAD:
-    - ckad/index.md
-    - Application Design & Build: ckad/application-design.md
-    - Application Deployment: ckad/application-deployment.md
-    - Application Environment: ckad/application-environment.md
-    - Services & Networking: ckad/services-networking.md
-    - Observability & Maintenance: ckad/observability.md
-  - CKS:
-    - cks/index.md
-    - Cluster Setup: cks/cluster-setup.md
-    - Cluster Hardening: cks/cluster-hardening.md
-    - System Hardening: cks/system-hardening.md
-    - Minimize Microservice Vulnerabilities: cks/microservice-vulnerabilities.md
-    - Supply Chain Security: cks/supply-chain-security.md
-    - Monitoring, Logging & Runtime Security: cks/monitoring-logging-runtime.md
+  - Kubestronaut:
+    - KCNA:
+      - kcna/index.md
+      - Kubernetes Fundamentals: kcna/kubernetes-fundamentals.md
+      - Container Orchestration: kcna/container-orchestration.md
+      - Cloud Native Architecture: kcna/cloud-native-architecture.md
+      - Cloud Native Delivery: kcna/cloud-native-delivery.md
+    - KCSA:
+      - kcsa/index.md
+      - Cloud Native Security: kcsa/cloud-native-security.md
+      - Cluster Component Security: kcsa/cluster-component-security.md
+      - Security Fundamentals: kcsa/security-fundamentals.md
+      - Threat Model: kcsa/threat-model.md
+      - Platform Security: kcsa/platform-security.md
+      - Compliance: kcsa/compliance.md
+    - CKA:
+      - cka/index.md
+      - Cluster Architecture: cka/cluster-architecture.md
+      - Workloads & Scheduling: cka/workloads-scheduling.md
+      - Services & Networking: cka/services-networking.md
+      - Storage: cka/storage.md
+      - Troubleshooting: cka/troubleshooting.md
+    - CKAD:
+      - ckad/index.md
+      - Application Design & Build: ckad/application-design.md
+      - Application Deployment: ckad/application-deployment.md
+      - Application Environment: ckad/application-environment.md
+      - Services & Networking: ckad/services-networking.md
+      - Observability & Maintenance: ckad/observability.md
+    - CKS:
+      - cks/index.md
+      - Cluster Setup: cks/cluster-setup.md
+      - Cluster Hardening: cks/cluster-hardening.md
+      - System Hardening: cks/system-hardening.md
+      - Minimize Microservice Vulnerabilities: cks/microservice-vulnerabilities.md
+      - Supply Chain Security: cks/supply-chain-security.md
+      - Monitoring, Logging & Runtime Security: cks/monitoring-logging-runtime.md
+  - Additional Certifications:
+    - PCA: pca/index.md
+    - ICA: ica/index.md
+    - CCA: cca/index.md
+    - CAPA: capa/index.md
+    - CGOA: cgoa/index.md
+    - CBA: cba/index.md
+    - OTCA: otca/index.md
+    - KCA: kca/index.md
+    - CNPA: cnpa/index.md
+    - CNPE: cnpe/index.md
+    - LFCS: lfcs/index.md
   - Resources: resources/index.md
   - Quiz: quiz/index.html

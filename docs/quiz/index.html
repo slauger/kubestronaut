@@ -290,11 +290,26 @@
             <div class="control-group">
                 <label for="catalogFilter">Certification:</label>
                 <select id="catalogFilter" onchange="loadQuestions()">
-                    <option value="questions-kcna.json">KCNA - Kubernetes and Cloud Native Associate</option>
-                    <option value="questions-kcsa.json">KCSA - Kubernetes and Cloud Native Security Associate</option>
-                    <option value="questions-cka.json">CKA - Certified Kubernetes Administrator</option>
-                    <option value="questions-ckad.json">CKAD - Certified Kubernetes Application Developer</option>
-                    <option value="questions-cks.json">CKS - Certified Kubernetes Security Specialist</option>
+                    <optgroup label="Kubestronaut (Core 5)">
+                        <option value="questions-kcna.json">KCNA - Kubernetes and Cloud Native Associate</option>
+                        <option value="questions-kcsa.json">KCSA - Kubernetes and Cloud Native Security Associate</option>
+                        <option value="questions-cka.json">CKA - Certified Kubernetes Administrator</option>
+                        <option value="questions-ckad.json">CKAD - Certified Kubernetes Application Developer</option>
+                        <option value="questions-cks.json">CKS - Certified Kubernetes Security Specialist</option>
+                    </optgroup>
+                    <optgroup label="Additional Certifications">
+                        <option value="questions-pca.json">PCA - Prometheus Certified Associate</option>
+                        <option value="questions-ica.json">ICA - Istio Certified Associate</option>
+                        <option value="questions-cca.json">CCA - Cilium Certified Associate</option>
+                        <option value="questions-capa.json">CAPA - Certified Argo Project Associate</option>
+                        <option value="questions-cgoa.json">CGOA - Certified GitOps Associate</option>
+                        <option value="questions-cba.json">CBA - Certified Backstage Associate</option>
+                        <option value="questions-otca.json">OTCA - OpenTelemetry Certified Associate</option>
+                        <option value="questions-kca.json">KCA - Kyverno Certified Associate</option>
+                        <option value="questions-cnpa.json">CNPA - Cloud Native Platform Associate</option>
+                        <option value="questions-cnpe.json">CNPE - Cloud Native Platform Engineer</option>
+                        <option value="questions-lfcs.json">LFCS - Linux Foundation Certified Sysadmin</option>
+                    </optgroup>
                 </select>
             </div>
 
