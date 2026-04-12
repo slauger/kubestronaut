@@ -448,5 +448,605 @@
     "explanation": "Immutable infrastructure (and immutable containers) is the practice of ensuring that deployed containers are never modified at runtime. Any change requires building a new image and redeploying. This is enforced through read-only root filesystems, dropping write capabilities, and preventing exec into containers, making it harder for attackers to persist in compromised containers.",
     "multiple_choice": false,
     "reference": "https://kubernetes.io/docs/concepts/containers/"
+  },
+  {
+    "id": 31,
+    "category": "Cluster Setup",
+    "question": "What is the primary advantage of CiliumNetworkPolicy over standard Kubernetes NetworkPolicy?",
+    "answers": [
+      "CiliumNetworkPolicy does not require a CNI plugin",
+      "CiliumNetworkPolicy supports Layer 7 filtering, CIDR-based deny rules, DNS-aware egress, and identity-based policies",
+      "CiliumNetworkPolicy automatically encrypts all traffic",
+      "CiliumNetworkPolicy works without any labels on pods"
+    ],
+    "correct": 1,
+    "explanation": "CiliumNetworkPolicy extends standard Kubernetes NetworkPolicy with Layer 3/4/7 filtering, native CIDR-based deny rules (not just 'except' blocks), DNS-aware egress controls, and Cilium identity-based policies. Standard NetworkPolicy only supports Layer 3/4 with label selectors and IP blocks.",
+    "multiple_choice": false,
+    "reference": "https://docs.cilium.io/en/stable/security/policy/"
+  },
+  {
+    "id": 32,
+    "category": "Cluster Setup",
+    "question": "In a CiliumNetworkPolicy, which field replaces the standard NetworkPolicy's podSelector?",
+    "answers": [
+      "nodeSelector",
+      "endpointSelector",
+      "ciliumSelector",
+      "workloadSelector"
+    ],
+    "correct": 1,
+    "explanation": "CiliumNetworkPolicy uses endpointSelector instead of podSelector to select the pods the policy applies to. The endpointSelector uses the same label matching syntax but operates on Cilium endpoints, which map to pods.",
+    "multiple_choice": false,
+    "reference": "https://docs.cilium.io/en/stable/security/policy/language/#endpointselector"
+  },
+  {
+    "id": 33,
+    "category": "Cluster Setup",
+    "question": "How do you reference pods in another namespace within a CiliumNetworkPolicy?",
+    "answers": [
+      "Using the namespaceSelector field",
+      "Using the label io.kubernetes.pod.namespace on the endpointSelector",
+      "Using a CiliumClusterWideNetworkPolicy instead",
+      "Cross-namespace references are not supported in CiliumNetworkPolicy"
+    ],
+    "correct": 1,
+    "explanation": "In CiliumNetworkPolicy, you reference pods in other namespaces by adding the label io.kubernetes.pod.namespace: <namespace-name> to the endpoint selector in the ingress or egress rule. This is different from standard NetworkPolicy which uses a separate namespaceSelector field.",
+    "multiple_choice": false,
+    "reference": "https://docs.cilium.io/en/stable/security/policy/language/#endpointselector"
+  },
+  {
+    "id": 34,
+    "category": "Cluster Setup",
+    "question": "In a CiliumNetworkPolicy, what happens when both egress allow rules and egressDeny rules match the same traffic?",
+    "answers": [
+      "The allow rule takes precedence",
+      "The policy is invalid and rejected",
+      "The deny rule takes precedence",
+      "The order in which they appear determines precedence"
+    ],
+    "correct": 2,
+    "explanation": "In CiliumNetworkPolicy, deny rules always take precedence over allow rules. This is useful for patterns like allowing all egress traffic (0.0.0.0/0) while explicitly blocking access to specific endpoints like a cloud metadata service.",
+    "multiple_choice": false,
+    "reference": "https://docs.cilium.io/en/stable/security/policy/language/#deny-policies"
+  },
+  {
+    "id": 35,
+    "category": "Cluster Setup",
+    "question": "Which IP address is commonly used by cloud providers for the instance metadata service and should be blocked from pod access?",
+    "answers": [
+      "10.0.0.1",
+      "172.16.0.1",
+      "169.254.169.254",
+      "192.168.1.1"
+    ],
+    "correct": 2,
+    "explanation": "The IP address 169.254.169.254 is the standard cloud metadata endpoint used by AWS, GCP, and Azure. Pods that can reach this endpoint may be able to access sensitive information such as IAM credentials, instance identity tokens, and configuration data. Blocking this via NetworkPolicy or CiliumNetworkPolicy is a common security hardening measure.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/tasks/administer-cluster/securing-a-cluster/#restricting-cloud-metadata-api-access"
+  },
+  {
+    "id": 36,
+    "category": "Cluster Hardening",
+    "question": "Which API server flag sets the minimum TLS version for client connections?",
+    "answers": [
+      "--tls-version=1.3",
+      "--tls-min-version=VersionTLS13",
+      "--min-tls-version=TLS1.3",
+      "--ssl-min-protocol=TLSv1.3"
+    ],
+    "correct": 1,
+    "explanation": "The API server uses the --tls-min-version flag with Go-style version names: VersionTLS10, VersionTLS11, VersionTLS12, or VersionTLS13. Setting --tls-min-version=VersionTLS13 ensures clients must use TLS 1.3 or higher. The kubelet and etcd support the same flag.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/reference/command-line-tools-reference/kube-apiserver/"
+  },
+  {
+    "id": 37,
+    "category": "Cluster Hardening",
+    "question": "Which signerName should be used when creating a CertificateSigningRequest for user authentication to the Kubernetes API server?",
+    "answers": [
+      "kubernetes.io/kubelet-serving",
+      "kubernetes.io/kube-apiserver-client",
+      "kubernetes.io/legacy-unknown",
+      "kubernetes.io/kube-apiserver-serving"
+    ],
+    "correct": 1,
+    "explanation": "The signer kubernetes.io/kube-apiserver-client is used for client certificates that authenticate users or services to the API server. The usages field must include 'client auth'. kubernetes.io/kubelet-serving is for kubelet serving certificates, and kubernetes.io/kube-apiserver-client-kubelet is for kubelet client certificates.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/reference/access-authn-authz/certificate-signing-requests/#kubernetes-signers"
+  },
+  {
+    "id": 38,
+    "category": "Cluster Hardening",
+    "question": "What is the correct sequence of commands to create, approve, and extract a certificate from a Kubernetes CertificateSigningRequest?",
+    "answers": [
+      "kubectl create csr → kubectl approve csr → kubectl get csr -o certificate",
+      "kubectl apply -f csr.yaml → kubectl certificate approve <name> → kubectl get csr <name> -o jsonpath='{.status.certificate}' | base64 -d",
+      "kubectl certificate create → kubectl certificate sign → kubectl certificate download",
+      "openssl x509 -req → kubectl upload cert → kubectl apply cert"
+    ],
+    "correct": 1,
+    "explanation": "The workflow is: (1) create the CSR resource with kubectl apply, (2) approve it with kubectl certificate approve, (3) extract the signed certificate from .status.certificate (which is base64-encoded) using kubectl get csr with jsonpath and piping through base64 -d.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/reference/access-authn-authz/certificate-signing-requests/#normal-user"
+  },
+  {
+    "id": 39,
+    "category": "Cluster Hardening",
+    "question": "How can you mount a ServiceAccount token with a custom expiration time in a Pod?",
+    "answers": [
+      "Set the token-ttl annotation on the ServiceAccount",
+      "Use a projected volume with a serviceAccountToken source and set expirationSeconds",
+      "Set automountServiceAccountToken to a duration value",
+      "Configure the --service-account-max-token-expiration flag on the API server"
+    ],
+    "correct": 1,
+    "explanation": "To mount a ServiceAccount token with a custom expiration, use a projected volume with a serviceAccountToken source. The expirationSeconds field controls the token lifetime. This is preferred over long-lived Secret-based tokens because projected tokens are automatically rotated by the kubelet.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#serviceaccount-token-volume-projection"
+  },
+  {
+    "id": 40,
+    "category": "Cluster Hardening",
+    "question": "Which kubectl command checks whether a specific user or ServiceAccount has permission to perform an action?",
+    "answers": [
+      "kubectl get rbac",
+      "kubectl auth can-i <verb> <resource> --as=<user>",
+      "kubectl check-permission <user> <action>",
+      "kubectl describe role --user=<user>"
+    ],
+    "correct": 1,
+    "explanation": "kubectl auth can-i allows you to check if a specific action is allowed. The --as flag lets you impersonate any user or ServiceAccount (e.g., --as=system:serviceaccount:namespace:sa-name). Use --list to see all permissions for a given identity. This is essential for RBAC debugging during the exam.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/reference/access-authn-authz/authorization/#checking-api-access"
+  },
+  {
+    "id": 41,
+    "category": "System Hardening",
+    "question": "Which seccomp profile type is recommended as a baseline for all workloads in Kubernetes?",
+    "answers": [
+      "Unconfined",
+      "Localhost",
+      "RuntimeDefault",
+      "StrictMode"
+    ],
+    "correct": 2,
+    "explanation": "RuntimeDefault uses the container runtime's built-in seccomp profile, which blocks a sensible set of dangerous syscalls while allowing most applications to function normally. It is recommended as the baseline for all workloads. Localhost is for custom profiles, Unconfined disables seccomp entirely, and StrictMode is not a valid type.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/tutorials/security/seccomp/"
+  },
+  {
+    "id": 42,
+    "category": "System Hardening",
+    "question": "Where must custom seccomp profile JSON files be placed on a node for Kubernetes to use them?",
+    "answers": [
+      "/etc/kubernetes/seccomp/",
+      "/var/lib/kubelet/seccomp/",
+      "/opt/kubernetes/profiles/",
+      "/usr/share/seccomp/"
+    ],
+    "correct": 1,
+    "explanation": "Custom seccomp profiles must be placed under the kubelet's configured seccomp profile root directory, which defaults to /var/lib/kubelet/seccomp/. When using type: Localhost in the Pod spec, the localhostProfile path is relative to this directory (e.g., profiles/my-profile.json maps to /var/lib/kubelet/seccomp/profiles/my-profile.json).",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/tutorials/security/seccomp/#create-a-local-kubernetes-cluster-with-kind"
+  },
+  {
+    "id": 43,
+    "category": "System Hardening",
+    "question": "What is the security benefit of setting capabilities.drop: ['ALL'] in a container's securityContext?",
+    "answers": [
+      "It prevents the container from using any network connections",
+      "It removes all Linux capabilities from the container process, following the principle of least privilege",
+      "It disables all logging for the container",
+      "It makes the container filesystem read-only"
+    ],
+    "correct": 1,
+    "explanation": "Setting capabilities.drop: ['ALL'] removes all Linux capabilities from the container process, such as NET_RAW, SYS_ADMIN, CHOWN, etc. This follows the principle of least privilege. You can then selectively add back only the specific capabilities your application needs (e.g., NET_BIND_SERVICE for binding to ports below 1024).",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-capabilities-for-a-container"
+  },
+  {
+    "id": 44,
+    "category": "System Hardening",
+    "question": "Which command loads an AppArmor profile into the kernel on a Linux node?",
+    "answers": [
+      "apparmor --load /path/to/profile",
+      "apparmor_parser /path/to/profile",
+      "aa-load /path/to/profile",
+      "systemctl load apparmor-profile"
+    ],
+    "correct": 1,
+    "explanation": "The apparmor_parser command loads AppArmor profiles into the kernel. Use apparmor_parser -q for quiet mode, apparmor_parser -C for complain mode, and apparmor_parser -R to remove a profile. After loading, verify with aa-status that the profile appears in the list of loaded profiles.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/tutorials/security/apparmor/"
+  },
+  {
+    "id": 45,
+    "category": "System Hardening",
+    "question": "Which of the following commands help identify unnecessary services running on a Kubernetes node? (Select all that apply)",
+    "answers": [
+      "systemctl list-units --type=service --state=running",
+      "ss -tlnp",
+      "kubectl get services",
+      "ps aux"
+    ],
+    "correct": [0, 1, 3],
+    "explanation": "To reduce the attack surface of a node, use systemctl list-units to find running services, ss -tlnp to list open TCP ports and the processes listening on them, and ps aux to view all running processes. kubectl get services lists Kubernetes Service objects, not host-level services.",
+    "multiple_choice": true,
+    "reference": "https://kubernetes.io/docs/tasks/administer-cluster/securing-a-cluster/"
+  },
+  {
+    "id": 46,
+    "category": "Minimize Microservice Vulnerabilities",
+    "question": "What does the authentication.mode: required field do in a CiliumNetworkPolicy?",
+    "answers": [
+      "It requires pods to use a ServiceAccount token",
+      "It enables mutual authentication, ensuring both source and destination are cryptographically verified before allowing traffic",
+      "It requires HTTP basic authentication for all requests",
+      "It enforces TLS client certificate verification at the application level"
+    ],
+    "correct": 1,
+    "explanation": "Setting authentication.mode: required in a CiliumNetworkPolicy egress or ingress rule enables Cilium's mutual authentication. Both endpoints must cryptographically prove their identity using Cilium's identity system before traffic is allowed. This works at the network layer without requiring application changes.",
+    "multiple_choice": false,
+    "reference": "https://docs.cilium.io/en/stable/network/servicemesh/mutual-authentication/mutual-authentication/"
+  },
+  {
+    "id": 47,
+    "category": "Minimize Microservice Vulnerabilities",
+    "question": "Which namespace label configures Pod Security Admission to reject pods that violate the baseline security standard?",
+    "answers": [
+      "pod-security.kubernetes.io/warn=baseline",
+      "pod-security.kubernetes.io/audit=baseline",
+      "pod-security.kubernetes.io/enforce=baseline",
+      "pod-security.kubernetes.io/reject=baseline"
+    ],
+    "correct": 2,
+    "explanation": "The label pod-security.kubernetes.io/enforce=baseline configures the PodSecurity admission controller to reject (deny creation of) any pod that violates the baseline security standard. The warn mode shows a warning but allows the pod, audit mode logs the violation, and 'reject' is not a valid mode.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/security/pod-security-admission/"
+  },
+  {
+    "id": 48,
+    "category": "Minimize Microservice Vulnerabilities",
+    "question": "Which fields are required for a pod to pass the 'restricted' Pod Security Standard? (Select all that apply)",
+    "answers": [
+      "runAsNonRoot: true",
+      "allowPrivilegeEscalation: false",
+      "capabilities.drop: ['ALL']",
+      "hostNetwork: true"
+    ],
+    "correct": [0, 1, 2],
+    "explanation": "The restricted Pod Security Standard requires: runAsNonRoot: true, allowPrivilegeEscalation: false, capabilities drop ALL (may add only NET_BIND_SERVICE), a seccomp profile (RuntimeDefault or Localhost), and restricted volume types. hostNetwork: true is explicitly forbidden under both baseline and restricted standards.",
+    "multiple_choice": true,
+    "reference": "https://kubernetes.io/docs/concepts/security/pod-security-standards/"
+  },
+  {
+    "id": 49,
+    "category": "Minimize Microservice Vulnerabilities",
+    "question": "How can you read the raw content of a Secret directly from etcd?",
+    "answers": [
+      "kubectl get secret <name> -o yaml",
+      "etcdctl get /registry/secrets/<namespace>/<name> with the correct etcd certificates",
+      "curl https://localhost:2379/v3/kv/range",
+      "kubectl exec etcd-pod -- cat /var/lib/etcd/secrets"
+    ],
+    "correct": 1,
+    "explanation": "To read a Secret directly from etcd, use ETCDCTL_API=3 etcdctl get /registry/secrets/<namespace>/<name> with the etcd server endpoint and TLS certificates (--cacert, --cert, --key pointing to the etcd PKI files under /etc/kubernetes/pki/etcd/). This reveals whether the Secret is stored encrypted or in plaintext.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/tasks/administer-cluster/encrypt-data/#verifying-that-data-is-encrypted"
+  },
+  {
+    "id": 50,
+    "category": "Minimize Microservice Vulnerabilities",
+    "question": "Why is mounting Secrets as volumes preferred over exposing them as environment variables?",
+    "answers": [
+      "Volume-mounted Secrets are encrypted, environment variables are not",
+      "Environment variables are visible in the pod spec and may leak through logs, crash dumps, or child processes, while volume mounts are only accessible via the filesystem",
+      "Volume-mounted Secrets are automatically rotated, environment variables require a pod restart",
+      "There is no difference; both methods are equally secure"
+    ],
+    "correct": 1,
+    "explanation": "Environment variables containing Secrets can leak through pod spec inspection (kubectl describe), application error logs, crash dumps, and are inherited by child processes. Volume-mounted Secrets are only accessible through the filesystem at the specified mount path and can be restricted with file permissions (e.g., defaultMode: 0400).",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/configuration/secret/#using-secrets"
+  },
+  {
+    "id": 51,
+    "category": "Minimize Microservice Vulnerabilities",
+    "question": "What is the correct order of providers in an EncryptionConfiguration to enable encryption while still reading old unencrypted Secrets?",
+    "answers": [
+      "identity first, then aescbc",
+      "aescbc first, then identity",
+      "Only aescbc, no identity needed",
+      "The order does not matter"
+    ],
+    "correct": 1,
+    "explanation": "The first provider in the list is used for encrypting new data. Having aescbc (or aesgcm/secretbox) first ensures all new Secrets are encrypted. The identity provider at the end acts as a fallback for reading existing unencrypted Secrets. Without identity at the end, old plaintext Secrets would become unreadable until re-encrypted.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/tasks/administer-cluster/encrypt-data/"
+  },
+  {
+    "id": 52,
+    "category": "Minimize Microservice Vulnerabilities",
+    "question": "After enabling Secret encryption at rest, which command re-encrypts all existing Secrets?",
+    "answers": [
+      "kubectl encrypt secrets --all-namespaces",
+      "kubectl get secrets --all-namespaces -o json | kubectl replace -f -",
+      "kubeadm certs encrypt-secrets",
+      "etcdctl encrypt --prefix /registry/secrets"
+    ],
+    "correct": 1,
+    "explanation": "The command kubectl get secrets -A -o json | kubectl replace -f - reads all Secrets and writes them back through the API server, which re-encrypts them using the configured encryption provider. This is necessary because enabling encryption only affects newly created or updated Secrets; existing ones remain in their original format until re-written.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/tasks/administer-cluster/encrypt-data/#ensure-all-secrets-are-encrypted"
+  },
+  {
+    "id": 53,
+    "category": "Supply Chain Security",
+    "question": "What is an SBOM (Software Bill of Materials) in the context of supply chain security?",
+    "answers": [
+      "A list of all Kubernetes nodes in a cluster",
+      "A comprehensive inventory of all components, libraries, and dependencies in a software artifact",
+      "A log of all container image pulls in a registry",
+      "A report of all security vulnerabilities found in an image"
+    ],
+    "correct": 1,
+    "explanation": "An SBOM is a machine-readable inventory listing all components, libraries, and dependencies contained in a software artifact such as a container image. It enables rapid identification of affected components when new vulnerabilities are disclosed. Common formats include SPDX (Linux Foundation/ISO standard) and CycloneDX (OWASP standard).",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/security/overview/"
+  },
+  {
+    "id": 54,
+    "category": "Supply Chain Security",
+    "question": "Which tool generates SPDX-JSON format SBOMs and is maintained by the Kubernetes project?",
+    "answers": [
+      "trivy",
+      "syft",
+      "bom",
+      "grype"
+    ],
+    "correct": 2,
+    "explanation": "The bom tool is maintained by the Kubernetes project and generates SBOMs in SPDX-JSON format. Trivy can generate both SPDX-JSON and CycloneDX SBOMs and can also scan existing SBOMs for vulnerabilities. Syft (by Anchore) also supports multiple SBOM formats. Grype is a vulnerability scanner, not an SBOM generator.",
+    "multiple_choice": false,
+    "reference": "https://github.com/kubernetes-sigs/bom"
+  },
+  {
+    "id": 55,
+    "category": "Supply Chain Security",
+    "question": "Which trivy command scans an existing SBOM file for known vulnerabilities?",
+    "answers": [
+      "trivy image --sbom sbom.json",
+      "trivy sbom sbom.json",
+      "trivy scan --type sbom sbom.json",
+      "trivy fs --sbom sbom.json"
+    ],
+    "correct": 1,
+    "explanation": "The trivy sbom command scans an existing SBOM file (in SPDX-JSON or CycloneDX format) for known vulnerabilities. This allows you to generate an SBOM once and scan it repeatedly as new CVEs are published without needing access to the original image.",
+    "multiple_choice": false,
+    "reference": "https://aquasecurity.github.io/trivy/latest/docs/target/sbom/"
+  },
+  {
+    "id": 56,
+    "category": "Supply Chain Security",
+    "question": "What does KubeLinter check for when analyzing Kubernetes manifests?",
+    "answers": [
+      "Syntax errors in YAML formatting only",
+      "Security best practices and production readiness issues such as running as root, missing readOnlyRootFilesystem, and privilege escalation",
+      "Network latency between pods",
+      "Resource usage and cost optimization"
+    ],
+    "correct": 1,
+    "explanation": "KubeLinter is a static analysis tool that checks Kubernetes YAML files and Helm charts for security best practices and production readiness. It detects issues like running as root, missing readOnlyRootFilesystem, privilege escalation, use of latest tags, sensitive host mounts, and more.",
+    "multiple_choice": false,
+    "reference": "https://docs.kubelinter.io/"
+  },
+  {
+    "id": 57,
+    "category": "Supply Chain Security",
+    "question": "Which static analysis tool assigns a numeric security score to Kubernetes resource definitions?",
+    "answers": [
+      "kube-linter",
+      "conftest",
+      "kubesec",
+      "trivy"
+    ],
+    "correct": 2,
+    "explanation": "kubesec performs security risk analysis on Kubernetes resources and returns a numeric score. A negative score indicates critical security issues (e.g., privileged containers), while a positive score indicates good security practices. It can be used via CLI (kubesec scan pod.yaml) or via its online API.",
+    "multiple_choice": false,
+    "reference": "https://kubesec.io/"
+  },
+  {
+    "id": 58,
+    "category": "Supply Chain Security",
+    "question": "Which of the following are valid SBOM formats used in the cloud native ecosystem? (Select all that apply)",
+    "answers": [
+      "SPDX-JSON",
+      "CycloneDX",
+      "OVAL",
+      "SARIF"
+    ],
+    "correct": [0, 1],
+    "explanation": "SPDX-JSON (Linux Foundation / ISO 5962 standard) and CycloneDX (OWASP standard) are the two primary SBOM formats used in the cloud native ecosystem. OVAL is a vulnerability assessment language, and SARIF is a static analysis results format — neither are SBOM formats.",
+    "multiple_choice": true,
+    "reference": "https://kubernetes.io/docs/concepts/security/overview/"
+  },
+  {
+    "id": 59,
+    "category": "Monitoring, Logging and Runtime Security",
+    "question": "In which file should custom Falco rules be placed to survive Falco upgrades?",
+    "answers": [
+      "/etc/falco/falco_rules.yaml",
+      "/etc/falco/falco_rules.local.yaml",
+      "/etc/falco/custom.yaml",
+      "/var/lib/falco/rules.yaml"
+    ],
+    "correct": 1,
+    "explanation": "Custom Falco rules should be placed in /etc/falco/falco_rules.local.yaml. The main rules file (/etc/falco/falco_rules.yaml) is overwritten during Falco package upgrades. The local rules file is loaded after the main file and can override existing rules or add new ones.",
+    "multiple_choice": false,
+    "reference": "https://falco.org/docs/rules/custom-rules/"
+  },
+  {
+    "id": 60,
+    "category": "Monitoring, Logging and Runtime Security",
+    "question": "Which Falco condition macro matches events that occur inside a container (not on the host)?",
+    "answers": [
+      "in_container",
+      "container",
+      "is_container",
+      "container_context"
+    ],
+    "correct": 1,
+    "explanation": "The 'container' macro in Falco matches events that occur inside a container context. Other common macros include 'spawned_process' (new process created), 'open_write' (file opened for writing), 'open_read' (file opened for reading), and 'sensitive_files' (access to files like /etc/shadow).",
+    "multiple_choice": false,
+    "reference": "https://falco.org/docs/reference/rules/default-macros/"
+  },
+  {
+    "id": 61,
+    "category": "Monitoring, Logging and Runtime Security",
+    "question": "Which Falco priority levels are valid? (Select all that apply)",
+    "answers": [
+      "EMERGENCY",
+      "WARNING",
+      "INFO",
+      "VERBOSE"
+    ],
+    "correct": [0, 1, 2],
+    "explanation": "Falco supports eight priority levels (highest to lowest): EMERGENCY, ALERT, CRITICAL, ERROR, WARNING, NOTICE, INFORMATIONAL (or INFO), and DEBUG. VERBOSE is not a valid Falco priority level.",
+    "multiple_choice": true,
+    "reference": "https://falco.org/docs/rules/basic-elements/#priority"
+  },
+  {
+    "id": 62,
+    "category": "Monitoring, Logging and Runtime Security",
+    "question": "Which fields are required when writing a custom Falco rule? (Select all that apply)",
+    "answers": [
+      "rule (name)",
+      "condition (filter expression)",
+      "output (alert message template)",
+      "remediation (automatic fix)"
+    ],
+    "correct": [0, 1, 2],
+    "explanation": "A Falco rule requires: rule (the name), desc (description), condition (the filter expression that triggers the alert), output (the template for the alert message), and priority (the severity level). Falco does not support automatic remediation — it is a detection tool, not a prevention tool.",
+    "multiple_choice": true,
+    "reference": "https://falco.org/docs/rules/basic-elements/"
+  },
+  {
+    "id": 63,
+    "category": "Monitoring, Logging and Runtime Security",
+    "question": "Which Falco output field placeholder shows the full command line of the process that triggered an alert?",
+    "answers": [
+      "%proc.name",
+      "%proc.cmdline",
+      "%proc.command",
+      "%evt.args"
+    ],
+    "correct": 1,
+    "explanation": "The %proc.cmdline field shows the full command line (process name + arguments) of the process that triggered the alert. %proc.name shows only the process name without arguments. Other useful fields include %container.name, %container.id, %fd.name (file descriptor name), and %user.name.",
+    "multiple_choice": false,
+    "reference": "https://falco.org/docs/reference/rules/supported-fields/"
+  },
+  {
+    "id": 64,
+    "category": "Monitoring, Logging and Runtime Security",
+    "question": "What is the correct approach when a Falco alert indicates a pod is running unauthorized package management tools (apt, yum)?",
+    "answers": [
+      "Ignore the alert since package managers are needed for updates",
+      "Identify the offending pod, investigate why package management is running, and scale down or delete the compromised workload",
+      "Disable the Falco rule to stop the alerts",
+      "Restart the Falco daemon to clear the alert"
+    ],
+    "correct": 1,
+    "explanation": "Package management inside running production containers is a strong indicator of compromise — attackers often install tools after gaining access. The correct incident response is to identify the pod, investigate the root cause, contain the threat by scaling down the deployment or isolating the pod with a NetworkPolicy, and then remediate.",
+    "multiple_choice": false,
+    "reference": "https://falco.org/docs/alerts/"
+  },
+  {
+    "id": 65,
+    "category": "Monitoring, Logging and Runtime Security",
+    "question": "Which audit policy rule would log all Secret access at the Metadata level while excluding the request and response bodies?",
+    "answers": [
+      "level: Request with resources: ['secrets']",
+      "level: Metadata with resources: [{group: '', resources: ['secrets']}]",
+      "level: RequestResponse with resources: ['secrets'] and omitBody: true",
+      "level: None with resources: ['secrets'] and logMetadata: true"
+    ],
+    "correct": 1,
+    "explanation": "Setting level: Metadata for secrets logs the request metadata (user, timestamp, resource, verb) without including the request or response body. This is the recommended level for Secrets because logging the body at Request or RequestResponse level would expose the actual secret values in the audit log.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/tasks/debug/debug-cluster/audit/#audit-policy"
+  },
+  {
+    "id": 66,
+    "category": "Cluster Hardening",
+    "question": "Which of the following are valid approaches to restrict anonymous access to the Kubernetes API server? (Select all that apply)",
+    "answers": [
+      "Set --anonymous-auth=false on the API server",
+      "Enable the NodeRestriction admission controller",
+      "Use RBAC to ensure no ClusterRoleBindings grant permissions to system:anonymous",
+      "Delete the kube-apiserver pod"
+    ],
+    "correct": [0, 2],
+    "explanation": "To restrict anonymous access, you can either disable it entirely with --anonymous-auth=false or ensure that RBAC does not grant any permissions to the system:anonymous user or system:unauthenticated group. NodeRestriction limits kubelet permissions, not anonymous access. Deleting the API server pod is not a valid security measure.",
+    "multiple_choice": true,
+    "reference": "https://kubernetes.io/docs/reference/access-authn-authz/authentication/#anonymous-requests"
+  },
+  {
+    "id": 67,
+    "category": "Cluster Hardening",
+    "question": "What does the NodeRestriction admission controller prevent?",
+    "answers": [
+      "Users from creating pods on specific nodes",
+      "Kubelets from modifying Node objects or Pods that are not bound to their own node",
+      "Network traffic between nodes",
+      "Mounting hostPath volumes"
+    ],
+    "correct": 1,
+    "explanation": "The NodeRestriction admission controller limits what a kubelet can modify via the API server. It prevents a kubelet from modifying the labels on other nodes (except specific allowed prefixes), modifying other nodes' Node objects, and modifying Pods that are not bound to its own node. This limits the blast radius of a compromised kubelet.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/#noderestriction"
+  },
+  {
+    "id": 68,
+    "category": "Minimize Microservice Vulnerabilities",
+    "question": "When using readOnlyRootFilesystem: true, which volume type is commonly used to provide writable directories for temporary files?",
+    "answers": [
+      "hostPath",
+      "emptyDir",
+      "persistentVolumeClaim",
+      "configMap"
+    ],
+    "correct": 1,
+    "explanation": "emptyDir volumes are the standard way to provide writable directories when the root filesystem is read-only. They are created as empty directories when a pod is assigned to a node and exist for the lifetime of the pod. Common mount paths include /tmp, /var/run, /var/cache, and /var/log. hostPath volumes would break isolation and are not appropriate for this purpose.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/storage/volumes/#emptydir"
+  },
+  {
+    "id": 69,
+    "category": "Cluster Setup",
+    "question": "When creating a default deny egress NetworkPolicy, which traffic must you explicitly allow for pods to still resolve DNS?",
+    "answers": [
+      "TCP and UDP on port 80",
+      "TCP and UDP on port 53",
+      "TCP on port 443",
+      "UDP on port 8053"
+    ],
+    "correct": 1,
+    "explanation": "DNS uses port 53 for both UDP (primary) and TCP (fallback for large responses). When applying a default deny egress policy, you must explicitly allow egress to port 53 on both protocols, otherwise pods will be unable to resolve service names or external hostnames.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/concepts/services-networking/network-policies/"
+  },
+  {
+    "id": 70,
+    "category": "Supply Chain Security",
+    "question": "What does the defaultAllow field control in an ImagePolicyWebhook admission configuration?",
+    "answers": [
+      "Whether images from Docker Hub are allowed by default",
+      "Whether image pulls are allowed if the webhook backend is unreachable",
+      "Whether unsigned images are allowed",
+      "Whether latest tags are allowed"
+    ],
+    "correct": 1,
+    "explanation": "The defaultAllow field determines the behavior when the ImagePolicyWebhook backend cannot be reached. If set to true, images are allowed when the webhook is unavailable (fail-open). If set to false, all image deployments are rejected when the backend is unreachable (fail-closed). Use true during initial setup and false for production enforcement.",
+    "multiple_choice": false,
+    "reference": "https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/#imagepolicywebhook"
   }
 ]
