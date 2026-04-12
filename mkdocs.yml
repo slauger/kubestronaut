@@ -113,6 +113,7 @@ extra_css:
 nav:
   - Home: index.md
   - Kubestronaut:
+    - Overview: kubestronaut.md
     - KCNA:
       - kcna/index.md
       - Kubernetes Fundamentals: kcna/kubernetes-fundamentals.md
@@ -149,7 +150,8 @@ nav:
       - Minimize Microservice Vulnerabilities: cks/microservice-vulnerabilities.md
       - Supply Chain Security: cks/supply-chain-security.md
       - Monitoring, Logging & Runtime Security: cks/monitoring-logging-runtime.md
-  - Additional Certifications:
+  - Golden Kubestronaut:
+    - Overview: golden-kubestronaut.md
     - PCA: pca/index.md
     - ICA: ica/index.md
     - CCA: cca/index.md

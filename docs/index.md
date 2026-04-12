@@ -20,7 +20,7 @@ graph TB
         CKA --> CKS
     end
 
-    subgraph additional ["Additional Certifications (11)"]
+    subgraph additional ["Golden Kubestronaut (+11)"]
         PCA["PCA<br/>Prometheus"]
         ICA["ICA<br/>Istio"]
         CCA["CCA<br/>Cilium"]
@@ -42,7 +42,7 @@ graph TB
 
 ## Certification Overview
 
-### Kubestronaut (Core 5)
+### [Kubestronaut](kubestronaut.md) (Core 5)
 
 | Certification | Type | Duration | Passing Score | Cost | Prerequisite |
 |---|---|---|---|---|---|
@@ -52,7 +52,7 @@ graph TB
 | [CKAD](ckad/index.md) | Performance-based | 2 hours | 66% | $445 | None |
 | [CKS](cks/index.md) | Performance-based | 2 hours | 67% | $445 | Active CKA |
 
-### Additional Certifications (11)
+### [Golden Kubestronaut](golden-kubestronaut.md) (+11 Certifications)
 
 | Certification | Type | Duration | Passing Score | Cost | Prerequisite |
 |---|---|---|---|---|---|
