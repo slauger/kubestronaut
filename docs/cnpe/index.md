@@ -42,16 +42,6 @@ pie title CNPE Exam Domain Weights
 !!! tip "Exam Tip"
     GitOps and Continuous Delivery (25%) and Platform APIs and Self-Service (25%) together account for 50% of the exam. Master GitOps workflows, CI/CD pipelines, progressive delivery strategies, CRDs, operators, and self-service provisioning.
 
-## Study Progress
-
-- [ ] Platform Architecture and Infrastructure (15%)
-- [ ] GitOps and Continuous Delivery (25%)
-- [ ] Platform APIs and Self-Service Capabilities (25%)
-- [ ] Observability and Operations (20%)
-- [ ] Security and Policy Enforcement (15%)
-- [ ] Practice with killer.sh simulator
-- [ ] Final review and weak-area revision
-
 ## Key Resources
 
 ### Official Resources

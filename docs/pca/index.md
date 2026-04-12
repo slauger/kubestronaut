@@ -38,16 +38,6 @@ pie title PCA Exam Domain Weights
 !!! tip "Exam Tip"
     PromQL accounts for 28% of the exam — the largest single domain. Focus on selectors, rates, aggregations, binary operators, and histograms. Combined with Prometheus Fundamentals (20%), these two domains make up almost half the exam.
 
-## Study Progress
-
-- [ ] Observability Concepts (18%)
-- [ ] Prometheus Fundamentals (20%)
-- [ ] PromQL (28%)
-- [ ] Instrumentation and Exporters (16%)
-- [ ] Alerting & Dashboarding (18%)
-- [ ] Practice questions and mock exams
-- [ ] Final review and weak-area revision
-
 ## Key Resources
 
 ### Official Resources

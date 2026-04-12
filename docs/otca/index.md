@@ -36,15 +36,6 @@ pie title OTCA Exam Domain Weights
 !!! tip "Exam Tip"
     The OpenTelemetry API and SDK domain accounts for a massive 46% of the exam. Focus on tracing (spans, context propagation), metrics (instruments, temporality, aggregation), logs, SDK pipelines, and sampling strategies. Combined with the Collector (26%), these two domains make up 72% of the exam.
 
-## Study Progress
-
-- [ ] Fundamentals of Observability (18%)
-- [ ] The OpenTelemetry API and SDK (46%)
-- [ ] The OpenTelemetry Collector (26%)
-- [ ] Maintaining and Debugging Observability Pipelines (10%)
-- [ ] Practice questions and mock exams
-- [ ] Final review and weak-area revision
-
 ## Key Resources
 
 ### Official Resources

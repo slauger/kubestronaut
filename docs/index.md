@@ -40,30 +40,6 @@ graph TB
 !!! tip "Timing"
     All 16 certifications must be **active simultaneously** (each valid for 2-3 years depending on the cert). Plan your schedule carefully so earlier certs don't expire before completing the remaining ones.
 
-## Progress Tracker
-
-### Kubestronaut (5 core)
-
-- [x] KCNA - Kubernetes and Cloud Native Associate
-- [x] KCSA - Kubernetes and Cloud Native Security Associate
-- [x] CKA - Certified Kubernetes Administrator (renewal needed)
-- [ ] CKAD - Certified Kubernetes Application Developer
-- [ ] CKS - Certified Kubernetes Security Specialist
-
-### Additional Certifications (11)
-
-- [ ] PCA - Prometheus Certified Associate
-- [ ] ICA - Istio Certified Associate
-- [ ] CCA - Cilium Certified Associate
-- [ ] CAPA - Certified Argo Project Associate
-- [ ] CGOA - Certified GitOps Associate
-- [ ] CBA - Certified Backstage Associate
-- [ ] OTCA - OpenTelemetry Certified Associate
-- [ ] KCA - Kyverno Certified Associate
-- [ ] CNPA - Cloud Native Platform Associate
-- [ ] CNPE - Cloud Native Platform Engineer
-- [ ] LFCS - Linux Foundation Certified Sysadmin
-
 ## Certification Overview
 
 ### Kubestronaut (Core 5)

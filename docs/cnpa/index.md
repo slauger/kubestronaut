@@ -43,17 +43,6 @@ pie title CNPA Exam Domain Weights
 !!! tip "Exam Tip"
     Platform Engineering Core Fundamentals (36%) dominates the exam. Understand platform thinking, self-service, golden paths, declarative resource management, and DevOps practices. Combined with Observability, Security & Conformance (20%), these two domains account for 56% of the exam.
 
-## Study Progress
-
-- [ ] Platform Engineering Core Fundamentals (36%)
-- [ ] Platform Observability, Security, and Conformance (20%)
-- [ ] Continuous Delivery & Platform Engineering (16%)
-- [ ] Platform APIs and Provisioning Infrastructure (12%)
-- [ ] IDPs and Developer Experience (8%)
-- [ ] Measuring your Platform (8%)
-- [ ] Practice questions and mock exams
-- [ ] Final review and weak-area revision
-
 ## Key Resources
 
 ### Official Resources

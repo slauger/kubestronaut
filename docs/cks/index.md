@@ -71,18 +71,6 @@ These are the tools you are expected to know hands-on during the CKS exam:
 !!! info "Exam Documentation Access"
     During the exam you have access to: [Kubernetes Docs](https://kubernetes.io/docs/), [Trivy Docs](https://aquasecurity.github.io/trivy/), [Falco Docs](https://falco.org/docs/), and [AppArmor Docs](https://gitlab.com/apparmor/apparmor/-/wikis/Documentation). Bookmark key pages before the exam: NetworkPolicy, CiliumNetworkPolicy, RBAC, Pod Security Standards, Audit Policy, Falco Rules, and EncryptionConfiguration.
 
-## Study Progress
-
-- [ ] Cluster Setup (15%) — NetworkPolicies, CiliumNetworkPolicy, CIS Benchmarks, Ingress TLS, Metadata Protection, Binary Verification
-- [ ] Cluster Hardening (15%) — RBAC, ServiceAccounts, API Server Hardening, TLS Settings, CSRs, Audit Logging, Kubernetes Upgrade
-- [ ] System Hardening (10%) — AppArmor, Seccomp, Reduce Attack Surface, Host Namespace Restrictions
-- [ ] Minimize Microservice Vulnerabilities (20%) — Pod Security Standards, OPA/Gatekeeper, Secrets, Encryption at Rest, gVisor, Cilium Mutual Auth, mTLS/Istio
-- [ ] Supply Chain Security (20%) — Trivy, SBOM (bom + trivy), Static Analysis (kubesec + KubeLinter), Dockerfile Hardening, ImagePolicyWebhook, Image Signing (cosign)
-- [ ] Monitoring, Logging and Runtime Security (20%) — Falco Custom Rules, Audit Logging, Immutable Containers, Behavioral Analytics, Incident Response
-- [ ] Practice with killer.sh CKS simulator (2 free sessions included)
-- [ ] Review weak areas and revisit tooling
-- [ ] Schedule and take the exam
-
 ## Key Resources
 
 | Resource | Description |

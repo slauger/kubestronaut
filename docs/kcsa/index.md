@@ -43,18 +43,6 @@ pie title KCSA Exam Domain Weights
 !!! info "Focus Areas"
     **Kubernetes Cluster Component Security** and **Kubernetes Security Fundamentals** together account for **44%** of the exam. Prioritize these two domains in your study plan.
 
-## Study Progress
-
-- [ ] Overview of Cloud Native Security (14%)
-- [ ] Kubernetes Cluster Component Security (22%)
-- [ ] Kubernetes Security Fundamentals (22%)
-- [ ] Kubernetes Threat Model (16%)
-- [ ] Platform Security (16%)
-- [ ] Compliance and Security Frameworks (10%)
-- [ ] Practice mock exams
-- [ ] Review weak areas
-- [ ] Schedule and take the exam
-
 ## Key Resources
 
 | Resource | Description |

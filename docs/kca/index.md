@@ -40,17 +40,6 @@ pie title KCA Exam Domain Weights
 !!! tip "Exam Tip"
     Writing Policies (32%) is the largest domain. Master validation rules, mutation (JSONPatch, strategic merge patch), generation policies, variables, JMESPath expressions, and Pod Security Standards. Combined with Fundamentals (18%) and Installation (18%), these three domains cover 68% of the exam.
 
-## Study Progress
-
-- [ ] Fundamentals of Kyverno (18%)
-- [ ] Installation, Configuration, and Upgrades (18%)
-- [ ] Kyverno CLI (12%)
-- [ ] Applying Policies (10%)
-- [ ] Writing Policies (32%)
-- [ ] Policy Management (10%)
-- [ ] Practice questions and mock exams
-- [ ] Final review and weak-area revision
-
 ## Key Resources
 
 ### Official Resources

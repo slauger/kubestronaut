@@ -44,19 +44,6 @@ pie title CCA Exam Domain Weights
 !!! tip "Exam Tip"
     Architecture (20%) and Network Policy (18%) together account for 38% of the exam. Understand Cilium's architecture, IPAM, datapath models, and identity-based network security model. The exam covers 8 domains — the broadest of any associate cert.
 
-## Study Progress
-
-- [ ] Architecture (20%)
-- [ ] Network Policy (18%)
-- [ ] Service Mesh (16%)
-- [ ] Network Observability (10%)
-- [ ] Installation and Configuration (10%)
-- [ ] Cluster Mesh (10%)
-- [ ] eBPF (10%)
-- [ ] BGP and External Networking (6%)
-- [ ] Practice questions and mock exams
-- [ ] Final review and weak-area revision
-
 ## Key Resources
 
 ### Official Resources

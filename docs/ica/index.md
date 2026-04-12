@@ -40,15 +40,6 @@ pie title ICA Exam Domain Weights
 !!! tip "Exam Tip"
     Traffic Management is the largest domain at 35%. Master VirtualService, DestinationRule, Gateway resources, traffic shifting, and resilience features (circuit breaking, retries, timeouts). Combined with Security (25%), these two domains account for 60% of the exam.
 
-## Study Progress
-
-- [ ] Installation & Configuration (20%)
-- [ ] Traffic Management (35%)
-- [ ] Security (25%)
-- [ ] Troubleshooting (20%)
-- [ ] Practice with killer.sh simulator
-- [ ] Final review and weak-area revision
-
 ## Key Resources
 
 ### Official Resources

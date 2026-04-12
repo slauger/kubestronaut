@@ -38,16 +38,6 @@ pie title CGOA Exam Domain Weights
 !!! tip "Exam Tip"
     GitOps Principles (30%) is the largest domain. Know the four OpenGitOps principles: Declarative, Versioned and Immutable, Pulled Automatically, and Continuously Reconciled. Combined with GitOps Terminology (20%), half the exam is about core concepts.
 
-## Study Progress
-
-- [ ] GitOps Terminology (20%)
-- [ ] GitOps Principles (30%)
-- [ ] Related Practices (16%)
-- [ ] GitOps Patterns (20%)
-- [ ] Tooling (14%)
-- [ ] Practice questions and mock exams
-- [ ] Final review and weak-area revision
-
 ## Key Resources
 
 ### Official Resources

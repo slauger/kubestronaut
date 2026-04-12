@@ -44,17 +44,6 @@ pie title CKA Exam Domain Weights
 !!! tip "Exam Tip"
     **Troubleshooting** is the single largest domain at 30%. Combined with **Cluster Architecture** (25%), these two domains make up over half the exam. Invest the majority of your study time on cluster administration, debugging broken nodes, and fixing misconfigured resources.
 
-## Study Progress
-
-- [ ] [Cluster Architecture, Installation & Configuration](cluster-architecture.md) (25%)
-- [ ] [Workloads & Scheduling](workloads-scheduling.md) (15%)
-- [ ] [Services & Networking](services-networking.md) (20%)
-- [ ] [Storage](storage.md) (10%)
-- [ ] [Troubleshooting](troubleshooting.md) (30%)
-- [ ] killer.sh simulator session 1
-- [ ] killer.sh simulator session 2
-- [ ] Final review and weak-area revision
-
 ## Useful kubectl Aliases and Shortcuts
 
 Setting up aliases and shell shortcuts at the start of the exam saves significant time. The following are allowed during the exam (you set them up in your terminal):

@@ -42,16 +42,6 @@ pie title CKAD Exam Domain Weights
 !!! tip "Exam Tip"
     **Application Environment, Configuration and Security** is the highest-weighted domain at 25%. Make sure you are comfortable with ConfigMaps, Secrets, SecurityContexts, ServiceAccounts, and resource management. The remaining four domains are evenly distributed at 15-20% each.
 
-## Study Progress
-
-- [ ] [Application Design and Build](application-design.md) (20%)
-- [ ] [Application Deployment](application-deployment.md) (20%)
-- [ ] [Application Environment, Configuration and Security](application-environment.md) (25%)
-- [ ] [Services and Networking](services-networking.md) (20%)
-- [ ] [Application Observability and Maintenance](observability.md) (15%)
-- [ ] Practice with [killer.sh](https://killer.sh/) simulator (2 sessions included)
-- [ ] Final review and weak-area revision
-
 ## Useful kubectl Aliases and Shortcuts
 
 Setting up aliases at the start of the exam saves significant time. The following are commonly used during the CKAD:

@@ -36,15 +36,6 @@ pie title CBA Exam Domain Weights
 !!! tip "Exam Tip"
     Customizing Backstage (32%) is the largest domain. Understand the difference between frontend and backend plugins, React/Material UI components, and how to extend Backstage functionality. Combined with Development Workflow (24%), these two domains account for 56% of the exam.
 
-## Study Progress
-
-- [ ] Customizing Backstage (32%)
-- [ ] Backstage Development Workflow (24%)
-- [ ] Backstage Infrastructure (22%)
-- [ ] Backstage Catalog (22%)
-- [ ] Practice questions and mock exams
-- [ ] Final review and weak-area revision
-
 ## Key Resources
 
 ### Official Resources

@@ -39,15 +39,6 @@ pie title KCNA Exam Domain Weights
 !!! tip "Exam Tip"
     Nearly half the exam (44%) covers Kubernetes Fundamentals. Invest the majority of your study time there. Combined with Container Orchestration (28%), these two domains account for 72% of the exam.
 
-## Study Progress
-
-- [ ] [Kubernetes Fundamentals](kubernetes-fundamentals.md) (44%)
-- [ ] [Container Orchestration](container-orchestration.md) (28%)
-- [ ] [Cloud Native Application Delivery](cloud-native-delivery.md) (16%)
-- [ ] [Cloud Native Architecture](cloud-native-architecture.md) (12%)
-- [ ] Practice questions and mock exams
-- [ ] Final review and weak-area revision
-
 ## Key Resources
 
 ### Official Resources

@@ -36,15 +36,6 @@ pie title CAPA Exam Domain Weights
 !!! tip "Exam Tip"
     Argo Workflows (36%) and Argo CD (34%) together account for 70% of the exam. Focus heavily on workflow templates, DAGs, artifacts for Workflows, and GitOps fundamentals, sync strategies, Helm/Kustomize integration for Argo CD.
 
-## Study Progress
-
-- [ ] Argo Workflows (36%)
-- [ ] Argo CD (34%)
-- [ ] Argo Rollouts (18%)
-- [ ] Argo Events (12%)
-- [ ] Practice questions and mock exams
-- [ ] Final review and weak-area revision
-
 ## Key Resources
 
 ### Official Resources

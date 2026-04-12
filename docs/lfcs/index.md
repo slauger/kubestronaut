@@ -42,16 +42,6 @@ pie title LFCS Exam Domain Weights
 !!! tip "Exam Tip"
     Operations Deployment (25%) and Networking (25%) together account for 50% of the exam. Master kernel configuration, process management, job scheduling, software packages, and recovery for Operations. For Networking, focus on IPv4/IPv6 configuration, DNS, time sync, SSH, packet filtering, and routing.
 
-## Study Progress
-
-- [ ] Operations Deployment (25%)
-- [ ] Networking (25%)
-- [ ] Storage (20%)
-- [ ] Essential Commands (20%)
-- [ ] Users and Groups (10%)
-- [ ] Practice with killer.sh simulator
-- [ ] Final review and weak-area revision
-
 ## Key Resources
 
 ### Official Resources
