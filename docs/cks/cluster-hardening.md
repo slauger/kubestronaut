@@ -287,6 +287,109 @@ spec:
 | `Request` | Metadata + request body |
 | `RequestResponse` | Metadata + request body + response body |
 
+### API Server TLS Configuration
+
+The API server supports configuring TLS minimum version and cipher suites to enforce strong encryption.
+
+```bash
+# Set TLS minimum version to 1.3 in the API server manifest
+sudo vi /etc/kubernetes/manifests/kube-apiserver.yaml
+```
+
+```yaml
+# /etc/kubernetes/manifests/kube-apiserver.yaml
+spec:
+  containers:
+    - command:
+        - kube-apiserver
+        - --tls-min-version=VersionTLS13
+        # Or for TLS 1.2 minimum:
+        # - --tls-min-version=VersionTLS12
+        # Optionally restrict cipher suites (TLS 1.2 only, TLS 1.3 has fixed ciphers):
+        # - --tls-cipher-suites=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+```
+
+```bash
+# Verify TLS settings after API server restart
+# Test that TLS 1.2 is rejected when min version is 1.3
+curl --tls-max 1.2 --tlsv1.2 -k https://localhost:6443/healthz
+# Expected: SSL error / connection refused
+
+# Test that TLS 1.3 works
+curl --tlsv1.3 -k https://localhost:6443/healthz
+# Expected: ok
+```
+
+| TLS Flag Value | Version |
+|---|---|
+| `VersionTLS10` | TLS 1.0 |
+| `VersionTLS11` | TLS 1.1 |
+| `VersionTLS12` | TLS 1.2 |
+| `VersionTLS13` | TLS 1.3 |
+
+!!! tip "Exam Tip"
+    The exam may ask you to set the TLS minimum version and then verify it with `curl`. Remember that `--tls-min-version` uses Go-style version names (`VersionTLS13`), not numeric versions. The kubelet and etcd also support similar flags: `--tls-min-version`.
+
+### CertificateSigningRequests
+
+Kubernetes provides a built-in API for managing TLS certificates through CertificateSigningRequests (CSRs). This allows you to issue, approve, and deny certificates within the cluster.
+
+#### Creating and Approving a CSR
+
+```bash
+# Generate a private key and CSR
+openssl genrsa -out myuser.key 2048
+openssl req -new -key myuser.key -out myuser.csr -subj "/CN=myuser/O=developers"
+
+# Encode the CSR for the Kubernetes API
+CSR_CONTENT=$(cat myuser.csr | base64 | tr -d '\n')
+```
+
+```yaml
+# csr.yaml
+apiVersion: certificates.k8s.io/v1
+kind: CertificateSigningRequest
+metadata:
+  name: myuser
+spec:
+  request: <BASE64_ENCODED_CSR>
+  signerName: kubernetes.io/kube-apiserver-client
+  expirationSeconds: 86400  # 24 hours
+  usages:
+    - client auth
+```
+
+```bash
+# Create the CSR
+kubectl apply -f csr.yaml
+
+# View pending CSRs
+kubectl get csr
+
+# Approve the CSR
+kubectl certificate approve myuser
+
+# Deny a CSR
+kubectl certificate deny myuser
+
+# Download the signed certificate
+kubectl get csr myuser -o jsonpath='{.status.certificate}' | base64 -d > myuser.crt
+
+# View the certificate details
+openssl x509 -in myuser.crt -text -noout
+```
+
+#### Common Signer Names
+
+| Signer | Purpose |
+|---|---|
+| `kubernetes.io/kube-apiserver-client` | Client certificates for authenticating to the API server |
+| `kubernetes.io/kube-apiserver-client-kubelet` | Client certificates for kubelets |
+| `kubernetes.io/kubelet-serving` | Serving certificates for kubelets |
+
+!!! tip "Exam Tip"
+    When creating a CSR, the `signerName` must match the intended use. For user authentication, use `kubernetes.io/kube-apiserver-client`. The `usages` field must include `client auth` for client certificates or `server auth` for server certificates. To extract the CN (Common Name) from an existing CSR file: `openssl req -in file.csr -noout -subject`.
+
 ### Upgrading Kubernetes with kubeadm
 
 Keeping Kubernetes up to date is critical for security. The upgrade process follows a specific order: control plane first, then worker nodes.

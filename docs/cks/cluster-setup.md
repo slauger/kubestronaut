@@ -108,6 +108,140 @@ spec:
 !!! tip "Exam Tip"
     In the exam, always apply a default deny policy first, then create allow rules for the specific traffic patterns described in the task. Remember to allow DNS egress if pods need name resolution.
 
+### CiliumNetworkPolicy
+
+Cilium is a CNI plugin that provides advanced networking, security, and observability for Kubernetes. CiliumNetworkPolicies extend standard Kubernetes NetworkPolicies with Layer 3/4/7 filtering, CIDR-based rules, identity-aware policies, and DNS-aware egress controls.
+
+!!! warning "2024 Curriculum Addition"
+    CiliumNetworkPolicy was added to the CKS curriculum in October 2024. It is a key topic for securing pod-to-pod communication and protecting metadata endpoints.
+
+#### CiliumNetworkPolicy vs Kubernetes NetworkPolicy
+
+| Feature | Kubernetes NetworkPolicy | CiliumNetworkPolicy |
+|---|---|---|
+| Layer 3 (IP) | Yes | Yes |
+| Layer 4 (Port/Protocol) | Yes | Yes |
+| Layer 7 (HTTP, DNS) | No | Yes |
+| CIDR-based deny | Via `except` only | Native deny rules |
+| DNS-aware egress | No | Yes |
+| Identity-based | Label selectors only | Cilium identity + labels |
+| Mutual Authentication | No | Yes |
+
+#### Default Deny with CiliumNetworkPolicy
+
+```yaml
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: production
+spec:
+  endpointSelector: {}
+  ingressDeny:
+    - fromEntities:
+        - world
+  egressDeny:
+    - toEntities:
+        - world
+```
+
+#### Allow Specific Egress with CIDR Deny
+
+A common exam pattern is allowing general egress while blocking access to a metadata service endpoint:
+
+```yaml
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: block-metadata
+  namespace: app
+spec:
+  endpointSelector: {}
+  egress:
+    # Allow all egress traffic
+    - toCIDR:
+        - 0.0.0.0/0
+    # Allow egress to endpoints in same namespace
+    - toEndpoints:
+        - matchLabels: {}
+    # Allow egress to kube-system namespace
+    - toEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: kube-system
+  egressDeny:
+    # Deny access to metadata service
+    - toCIDR:
+        - 192.168.100.21/32
+      toPorts:
+        - ports:
+            - port: "9055"
+              protocol: TCP
+```
+
+#### Layer 4 Rules (Port and Protocol Filtering)
+
+```yaml
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: deny-icmp-to-database
+  namespace: app
+spec:
+  endpointSelector:
+    matchLabels:
+      app: transmitter
+  egressDeny:
+    - toEndpoints:
+        - matchLabels:
+            app: database
+      icmps:
+        - fields:
+            - type: 8
+              family: IPv4
+```
+
+#### Cross-Namespace Policies
+
+```yaml
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-monitoring
+  namespace: app
+spec:
+  endpointSelector:
+    matchLabels:
+      app: backend
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: monitoring
+            app: prometheus
+      toPorts:
+        - ports:
+            - port: "9090"
+              protocol: TCP
+```
+
+!!! tip "Exam Tip"
+    CiliumNetworkPolicy uses `endpointSelector` instead of `podSelector`. When referencing pods in other namespaces, use the label `io.kubernetes.pod.namespace: <namespace>` in the endpoint selector. Remember that `egress` rules allow traffic while `egressDeny` rules explicitly block it — deny rules take precedence over allow rules.
+
+#### Useful Cilium Debugging Commands
+
+```bash
+# Check Cilium status
+cilium status
+
+# List Cilium endpoints
+cilium endpoint list
+
+# Check policy enforcement for a specific endpoint
+cilium endpoint get <endpoint-id>
+
+# Monitor traffic in real time
+cilium monitor --type policy-verdict
+```
+
 ### CIS Benchmarks with kube-bench
 
 The CIS (Center for Internet Security) Kubernetes Benchmark provides prescriptive guidance for hardening Kubernetes clusters. **kube-bench** is a tool that checks whether your cluster meets these benchmarks.

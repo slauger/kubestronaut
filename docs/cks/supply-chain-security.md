@@ -102,6 +102,45 @@ Example output interpretation:
 }
 ```
 
+#### KubeLinter
+
+KubeLinter is a static analysis tool that checks Kubernetes YAML files and Helm charts against a set of best practices, with a focus on security and production readiness.
+
+```bash
+# Lint a single manifest
+kube-linter lint pod.yaml
+
+# Lint an entire directory of manifests
+kube-linter lint manifests/
+
+# Lint a Helm chart
+kube-linter lint mychart/
+
+# List all available checks
+kube-linter checks list
+
+# Run only specific checks
+kube-linter lint --include run-as-non-root,no-read-only-root-fs pod.yaml
+
+# Exclude specific checks
+kube-linter lint --exclude unset-cpu-requirements,unset-memory-requirements manifests/
+```
+
+KubeLinter checks for common security issues such as:
+
+| Check | What It Detects |
+|---|---|
+| `run-as-non-root` | Containers not configured to run as non-root |
+| `no-read-only-root-fs` | Missing `readOnlyRootFilesystem: true` |
+| `privilege-escalation-container` | `allowPrivilegeEscalation` not set to `false` |
+| `privileged-container` | Containers running in privileged mode |
+| `sensitive-host-mounts` | Host path mounts to sensitive directories |
+| `dangling-service` | Services with no matching pods |
+| `latest-tag` | Images using the `latest` tag |
+
+!!! tip "Exam Tip"
+    KubeLinter was added to the CKS curriculum in 2024. It complements kubesec by providing a broader set of checks including Helm chart analysis. Know how to run it against manifests and interpret the output.
+
 #### conftest
 
 conftest is a testing tool for configuration files using Open Policy Agent (OPA) Rego policies.
@@ -381,20 +420,53 @@ spec:
 
 An SBOM is a comprehensive inventory of all components, libraries, and dependencies in a software artifact. It helps identify vulnerable components quickly.
 
+#### SBOM Formats
+
+| Format | Standard | Common Tools |
+|---|---|---|
+| **SPDX-JSON** | Linux Foundation / ISO standard | `bom`, `trivy`, `syft` |
+| **CycloneDX** | OWASP standard | `trivy`, `syft` |
+
+#### Generating SBOMs
+
 ```bash
-# Generate an SBOM with Trivy
+# Generate SPDX-JSON SBOM with bom (Kubernetes project tool)
+bom generate --image registry.k8s.io/kube-apiserver:v1.31.0 \
+  --format json --output sbom.spdx.json
+
+# Generate SPDX-JSON SBOM with Trivy
 trivy image --format spdx-json --output sbom.spdx.json nginx:latest
 
-# Generate an SBOM with syft
+# Generate CycloneDX SBOM with Trivy
+trivy image --format cyclonedx --output sbom.cdx.json nginx:latest
+
+# Generate SBOMs with syft
 syft nginx:latest -o spdx-json > sbom.spdx.json
 syft nginx:latest -o cyclonedx-json > sbom.cdx.json
+```
 
-# Scan an SBOM for vulnerabilities
+#### Scanning SBOMs for Vulnerabilities
+
+```bash
+# Scan an existing SBOM for known vulnerabilities
 trivy sbom sbom.spdx.json
 
+# Scan and output in JSON format
+trivy sbom --format json --output results.json sbom.spdx.json
+
+# Scan with severity filter
+trivy sbom --severity HIGH,CRITICAL sbom.spdx.json
+```
+
+#### Attaching SBOMs to Images
+
+```bash
 # Attach an SBOM to an image with cosign
 cosign attach sbom --sbom sbom.spdx.json registry.example.com/myapp:v1.0
 ```
+
+!!! tip "Exam Tip"
+    Know the difference between `bom` (generates SPDX-JSON) and `trivy` (generates both SPDX-JSON and CycloneDX). The exam may ask you to generate an SBOM in a specific format and then scan it for vulnerabilities. The typical workflow is: generate SBOM with `bom` or `trivy`, then scan the SBOM file with `trivy sbom`.
 
 ## Practice Exercises
 

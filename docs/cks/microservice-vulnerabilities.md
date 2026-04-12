@@ -372,6 +372,52 @@ spec:
 !!! tip "Exam Tip"
     To use a different container runtime, first create a `RuntimeClass` resource with the appropriate `handler`, then reference it in the pod spec with `runtimeClassName`. The exam may ask you to configure a pod to run in a gVisor sandbox.
 
+### Pod-to-Pod Encryption with Cilium
+
+Cilium provides transparent encryption of traffic between pods using either IPsec or WireGuard. Additionally, Cilium supports **Mutual Authentication** at the network policy level, ensuring that only authenticated workloads can communicate.
+
+!!! warning "2024 Curriculum Addition"
+    Cilium pod-to-pod encryption and mutual authentication were added to the CKS curriculum in October 2024.
+
+#### Cilium Mutual Authentication
+
+Mutual Authentication in Cilium verifies the identity of both the source and destination of a connection at the network layer, without requiring application changes.
+
+```yaml
+# Enable mutual authentication for traffic between services
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: require-mutual-auth
+  namespace: app
+spec:
+  endpointSelector:
+    matchLabels:
+      type: database
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            type: messenger
+      authentication:
+        mode: required
+```
+
+#### Verifying Cilium Encryption
+
+```bash
+# Check if encryption is enabled
+cilium status | grep Encryption
+
+# Verify encrypted traffic between pods
+cilium encrypt status
+
+# Check if WireGuard is active
+cilium status --verbose | grep -i wireguard
+```
+
+!!! tip "Exam Tip"
+    To enable mutual authentication in a CiliumNetworkPolicy, add the `authentication.mode: required` field to the egress or ingress rule. This ensures both ends of the connection are cryptographically verified using Cilium's identity system.
+
 ### mTLS with Service Meshes
 
 Mutual TLS (mTLS) ensures that both the client and server authenticate each other, encrypting all inter-service communication.
