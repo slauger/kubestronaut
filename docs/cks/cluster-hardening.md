@@ -211,6 +211,153 @@ spec:
         # ... other flags
 ```
 
+#### Admission Webhooks
+
+Kubernetes supports dynamic admission control through webhooks. Unlike built-in admission controllers, webhooks call external services to validate or mutate requests.
+
+- **ValidatingWebhookConfiguration**: Rejects requests that don't meet your criteria
+- **MutatingWebhookConfiguration**: Modifies requests before they are persisted (e.g., injecting sidecars, adding default labels)
+
+```yaml
+# ValidatingWebhookConfiguration: deny pods without security context
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: validate-security-context
+webhooks:
+  - name: validate-security-context.example.com
+    admissionReviewVersions: ["v1"]
+    sideEffects: None
+    clientConfig:
+      service:
+        name: security-webhook
+        namespace: kube-system
+        path: /validate
+      caBundle: <CA_BUNDLE_BASE64>
+    rules:
+      - operations: ["CREATE", "UPDATE"]
+        apiGroups: [""]
+        apiVersions: ["v1"]
+        resources: ["pods"]
+    failurePolicy: Fail
+    namespaceSelector:
+      matchExpressions:
+        - key: kubernetes.io/metadata.name
+          operator: NotIn
+          values: ["kube-system"]
+```
+
+```yaml
+# MutatingWebhookConfiguration: inject sidecar containers
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: inject-sidecar
+webhooks:
+  - name: inject-sidecar.example.com
+    admissionReviewVersions: ["v1"]
+    sideEffects: None
+    clientConfig:
+      service:
+        name: sidecar-injector
+        namespace: kube-system
+        path: /mutate
+      caBundle: <CA_BUNDLE_BASE64>
+    rules:
+      - operations: ["CREATE"]
+        apiGroups: [""]
+        apiVersions: ["v1"]
+        resources: ["pods"]
+    failurePolicy: Ignore
+```
+
+Key webhook configuration fields:
+
+| Field | Description |
+|---|---|
+| `failurePolicy` | `Fail` (reject if webhook unreachable) or `Ignore` (allow if webhook unreachable) |
+| `namespaceSelector` | Restrict which namespaces the webhook applies to |
+| `objectSelector` | Filter objects by labels |
+| `timeoutSeconds` | Webhook call timeout (default 10s, max 30s) |
+| `caBundle` | CA certificate to verify the webhook server's TLS certificate |
+| `sideEffects` | Must be `None` or `NoneOnDryRun` for v1 webhooks |
+
+```bash
+# List all webhook configurations
+kubectl get validatingwebhookconfigurations
+kubectl get mutatingwebhookconfigurations
+
+# Inspect a specific webhook
+kubectl get validatingwebhookconfiguration <name> -o yaml
+
+# Temporarily disable a webhook (for emergency debugging)
+kubectl delete validatingwebhookconfiguration <name>
+```
+
+!!! warning "Common Pitfall"
+    Setting `failurePolicy: Fail` on a misconfigured webhook can lock you out of the cluster entirely. Always use `namespaceSelector` to exclude `kube-system` from webhook enforcement. If locked out, manually remove the webhook resource or restart the API server with `--disable-admission-plugins`.
+
+!!! tip "Exam Tip"
+    The exam may ask you to troubleshoot why pod creation is blocked. Check webhook configurations first with `kubectl get validatingwebhookconfigurations`. Common issues: expired `caBundle`, wrong `failurePolicy`, webhook service not running, or overly broad `rules` matching system namespaces.
+
+#### ValidatingAdmissionPolicy (CEL)
+
+ValidatingAdmissionPolicy provides in-process admission validation using Common Expression Language (CEL) expressions, without requiring an external webhook service.
+
+!!! info "Availability"
+    ValidatingAdmissionPolicy is GA since Kubernetes v1.30. On older versions, enable the `ValidatingAdmissionPolicy` feature gate and admission plugin.
+
+```yaml
+# ValidatingAdmissionPolicy: deny containers running as root
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: deny-run-as-root
+spec:
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+  validations:
+    - expression: >-
+        object.spec.containers.all(c,
+          has(c.securityContext) &&
+          has(c.securityContext.runAsNonRoot) &&
+          c.securityContext.runAsNonRoot == true)
+      message: "All containers must set runAsNonRoot to true"
+```
+
+```yaml
+# ValidatingAdmissionPolicyBinding: apply to specific namespaces
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: deny-run-as-root-binding
+spec:
+  policyName: deny-run-as-root
+  validationActions:
+    - Deny
+  matchResources:
+    namespaceSelector:
+      matchLabels:
+        environment: production
+```
+
+Common CEL expressions for security:
+
+| Policy | CEL Expression |
+|---|---|
+| Deny privileged | `object.spec.containers.all(c, !has(c.securityContext) \|\| !has(c.securityContext.privileged) \|\| c.securityContext.privileged != true)` |
+| Deny hostNetwork | `!has(object.spec.hostNetwork) \|\| object.spec.hostNetwork == false` |
+| Require image registry | `object.spec.containers.all(c, c.image.startsWith('registry.example.com/'))` |
+| Require resource limits | `object.spec.containers.all(c, has(c.resources) && has(c.resources.limits))` |
+
+!!! tip "Exam Tip"
+    ValidatingAdmissionPolicy requires two resources: the **policy** (CEL expression) and the **binding** (applies it to namespaces/resources). The `validationActions` can be `Deny`, `Warn`, or `Audit`, similar to Pod Security Admission modes.
+
 #### API Server Audit Logging
 
 Audit logging records all requests to the API server, providing an audit trail for security investigations.
@@ -389,6 +536,86 @@ openssl x509 -in myuser.crt -text -noout
 
 !!! tip "Exam Tip"
     When creating a CSR, the `signerName` must match the intended use. For user authentication, use `kubernetes.io/kube-apiserver-client`. The `usages` field must include `client auth` for client certificates or `server auth` for server certificates. To extract the CN (Common Name) from an existing CSR file: `openssl req -in file.csr -noout -subject`.
+
+### API Server Authorization Modes
+
+The API server supports multiple authorization modes configured via `--authorization-mode`. Modes are evaluated in order — if one authorizer has no opinion, the request passes to the next.
+
+```yaml
+# /etc/kubernetes/manifests/kube-apiserver.yaml
+spec:
+  containers:
+    - command:
+        - kube-apiserver
+        - --authorization-mode=Node,RBAC
+```
+
+| Mode | Description |
+|---|---|
+| `Node` | Authorizes kubelet API requests based on pods scheduled to the node |
+| `RBAC` | Role-based access control using Roles, ClusterRoles, and Bindings |
+| `Webhook` | Delegates authorization to an external HTTP service |
+| `ABAC` | Attribute-based access control using static policy files (legacy) |
+| `AlwaysAllow` | Allows all requests (insecure, only for testing) |
+| `AlwaysDeny` | Denies all requests (only for testing) |
+
+#### Node Authorization
+
+The Node authorizer restricts kubelets to only access resources related to pods scheduled on their node. It works together with the `NodeRestriction` admission controller.
+
+What Node authorization restricts:
+
+- Kubelets can only read Secrets, ConfigMaps, PVs, and PVCs referenced by pods bound to their node
+- Kubelets can only modify their own Node object and Pod status for pods on their node
+- Kubelets cannot access resources for pods on other nodes
+
+```bash
+# Verify current authorization modes
+cat /etc/kubernetes/manifests/kube-apiserver.yaml | grep authorization-mode
+# Expected: --authorization-mode=Node,RBAC
+```
+
+!!! warning "Common Pitfall"
+    Removing `Node` from `--authorization-mode` weakens kubelet isolation. A compromised kubelet could then access Secrets for pods on other nodes. Always keep `Node` authorization enabled.
+
+#### Webhook Authorization
+
+Webhook authorization delegates authorization decisions to an external service via HTTP callbacks.
+
+```yaml
+# /etc/kubernetes/webhook-authz-config.yaml
+apiVersion: v1
+kind: Config
+clusters:
+  - name: authz-webhook
+    cluster:
+      server: https://authz.example.com/authorize
+      certificate-authority: /etc/kubernetes/pki/authz-ca.crt
+users:
+  - name: api-server
+    user:
+      client-certificate: /etc/kubernetes/pki/authz-client.crt
+      client-key: /etc/kubernetes/pki/authz-client.key
+current-context: webhook
+contexts:
+  - context:
+      cluster: authz-webhook
+      user: api-server
+    name: webhook
+```
+
+```yaml
+# Enable in API server manifest
+spec:
+  containers:
+    - command:
+        - kube-apiserver
+        - --authorization-mode=Node,Webhook,RBAC
+        - --authorization-webhook-config-file=/etc/kubernetes/webhook-authz-config.yaml
+```
+
+!!! tip "Exam Tip"
+    The default authorization mode for kubeadm clusters is `Node,RBAC`. Modes are evaluated in order — `Node` should always come before `RBAC` to ensure kubelet requests are properly scoped. Use `kubectl auth can-i` to test authorization for any user or ServiceAccount.
 
 ### Upgrading Kubernetes with kubeadm
 
@@ -673,5 +900,9 @@ kubectl uncordon <worker-node>
 - [Kubernetes RBAC Documentation](https://kubernetes.io/docs/reference/access-authn-authz/rbac/)
 - [ServiceAccount Documentation](https://kubernetes.io/docs/concepts/security/service-accounts/)
 - [Admission Controllers Reference](https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/)
+- [Dynamic Admission Control (Webhooks)](https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/)
+- [ValidatingAdmissionPolicy](https://kubernetes.io/docs/reference/access-authn-authz/validating-admission-policy/)
+- [Authorization Overview](https://kubernetes.io/docs/reference/access-authn-authz/authorization/)
+- [Node Authorization](https://kubernetes.io/docs/reference/access-authn-authz/node/)
 - [Kubernetes Auditing](https://kubernetes.io/docs/tasks/debug/debug-cluster/audit/)
 - [Kubeadm Upgrade Guide](https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade/)

@@ -331,6 +331,181 @@ spec:
       emptyDir: {}
 ```
 
+### Kernel Hardening
+
+Linux kernel parameters can be tuned to enhance container security. Kubernetes allows setting safe sysctl parameters at the pod level.
+
+#### Safe vs Unsafe Sysctls
+
+| Category | Examples | Default |
+|---|---|---|
+| Safe sysctls | `kernel.shm_rmid_forced`, `net.ipv4.ip_local_port_range`, `net.ipv4.tcp_syncookies`, `net.ipv4.ping_group_range` | Allowed |
+| Unsafe sysctls | `kernel.msg*`, `kernel.sem`, `net.core.*` | Blocked by default |
+
+```yaml
+# Setting safe sysctls at the pod level
+apiVersion: v1
+kind: Pod
+metadata:
+  name: sysctl-pod
+spec:
+  securityContext:
+    sysctls:
+      - name: net.ipv4.ip_unprivileged_port_start
+        value: "0"
+      - name: kernel.shm_rmid_forced
+        value: "1"
+  containers:
+    - name: app
+      image: nginx:latest
+```
+
+To allow unsafe sysctls, configure the kubelet:
+
+```yaml
+# /var/lib/kubelet/config.yaml
+apiVersion: kubelet.config.k8s.io/v1beta1
+kind: KubeletConfiguration
+allowedUnsafeSysctls:
+  - "net.core.somaxconn"
+  - "kernel.msg*"
+```
+
+!!! tip "Exam Tip"
+    Only safe sysctls can be set without kubelet configuration changes. If the exam asks you to set an unsafe sysctl, you need to allow it on the kubelet first via `allowedUnsafeSysctls` in `/var/lib/kubelet/config.yaml`.
+
+### kubelet Security
+
+The kubelet is the node agent running on every node. A misconfigured kubelet can expose sensitive information or allow unauthorized access.
+
+```yaml
+# /var/lib/kubelet/config.yaml
+apiVersion: kubelet.config.k8s.io/v1beta1
+kind: KubeletConfiguration
+authentication:
+  anonymous:
+    enabled: false
+  webhook:
+    enabled: true
+authorization:
+  mode: Webhook
+readOnlyPort: 0
+protectKernelDefaults: true
+```
+
+| Setting | Secure Value | Why |
+|---|---|---|
+| `anonymous.enabled` | `false` | Prevents unauthenticated access to kubelet API |
+| `authorization.mode` | `Webhook` | Delegates authorization to the API server (RBAC) |
+| `readOnlyPort` | `0` | Disables unauthenticated read-only port 10255 |
+| `protectKernelDefaults` | `true` | Fails pods that try to change kernel tunables |
+
+```bash
+# Verify anonymous access is disabled
+curl -sk https://localhost:10250/pods
+# Should return 401 Unauthorized (not pod list)
+
+# Verify read-only port is disabled
+curl -s http://localhost:10255/pods
+# Should fail to connect
+
+# Check kubelet configuration
+cat /var/lib/kubelet/config.yaml | grep -A3 authentication
+cat /var/lib/kubelet/config.yaml | grep readOnlyPort
+```
+
+!!! warning "Common Pitfall"
+    The kubelet read-only port (10255) exposes pod and node information without authentication. Anyone with network access can enumerate all pods on the node. Always verify `readOnlyPort: 0` is set.
+
+### Container Runtime Debugging with crictl
+
+`crictl` is a CLI tool for CRI-compatible container runtimes (containerd, CRI-O). It is essential for debugging containers at the runtime level, especially when `kubectl` is unavailable.
+
+```bash
+# List running containers
+crictl ps
+
+# List all containers (including exited)
+crictl ps -a
+
+# List pods
+crictl pods
+
+# Inspect a container (security context, mounts, environment)
+crictl inspect <container-id>
+
+# View container logs
+crictl logs <container-id>
+crictl logs --tail 50 <container-id>
+
+# Execute a command in a container
+crictl exec -it <container-id> sh
+
+# List images on the node
+crictl images
+
+# Pull an image
+crictl pull nginx:latest
+
+# Remove an image
+crictl rmi <image-id>
+
+# Get container resource stats
+crictl stats
+```
+
+```bash
+# Debugging a crashed static pod (e.g., API server won't start)
+# 1. Find the pod
+crictl pods --name kube-apiserver
+
+# 2. Find containers in the pod
+crictl ps -a --pod <pod-id>
+
+# 3. Check container logs
+crictl logs <container-id>
+
+# 4. Inspect security context
+crictl inspect <container-id> | jq '.info.config.linux.security_context'
+```
+
+!!! tip "Exam Tip"
+    When the API server or kubelet is down and `kubectl` is not working, use `crictl` to debug containers directly on the node. This is especially useful when troubleshooting static pod failures after modifying API server or etcd manifests.
+
+### Static Pod Security
+
+Static pods are managed directly by the kubelet from manifest files, without the API server. The control plane components (API server, controller-manager, scheduler, etcd) run as static pods in kubeadm clusters.
+
+```bash
+# Default static pod manifest directory
+ls /etc/kubernetes/manifests/
+# kube-apiserver.yaml  kube-controller-manager.yaml  kube-scheduler.yaml  etcd.yaml
+
+# Check kubelet static pod path
+cat /var/lib/kubelet/config.yaml | grep staticPodPath
+# staticPodPath: /etc/kubernetes/manifests
+```
+
+#### Securing Static Pod Manifests
+
+```bash
+# Verify file permissions (should be root-owned, restricted)
+ls -la /etc/kubernetes/manifests/
+# Restrict permissions
+chmod 600 /etc/kubernetes/manifests/*.yaml
+chown root:root /etc/kubernetes/manifests/*.yaml
+```
+
+Key security considerations:
+
+- **File permissions**: Static pod manifests should be readable only by root (mode `600`)
+- **Path restriction**: Only trusted manifests should exist in the `staticPodPath` directory
+- **No admission control**: Static pods bypass most admission controllers including Pod Security Admission and OPA/Gatekeeper
+- **Mirror pods**: The kubelet creates read-only mirror pods in the API server for visibility, but they cannot be modified via `kubectl`
+
+!!! warning "Common Pitfall"
+    Since static pods bypass admission controllers, a malicious manifest placed in the static pod directory runs without any policy checks. Ensure only authorized users have write access to `/etc/kubernetes/manifests/`. This is why file permissions and node access control are critical.
+
 ## Practice Exercises
 
 ??? question "Exercise 1: Apply an AppArmor Profile to a Pod"
@@ -567,3 +742,7 @@ spec:
 - [Pod Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/)
 - [Linux Security Modules](https://kubernetes.io/docs/concepts/security/linux-kernel-security-constraints/)
 - [Restrict a Container's Syscalls with Seccomp](https://kubernetes.io/docs/tutorials/security/seccomp/)
+- [Using Sysctls in a Kubernetes Cluster](https://kubernetes.io/docs/tasks/administer-cluster/sysctl-cluster/)
+- [Kubelet Configuration](https://kubernetes.io/docs/reference/config-api/kubelet-config.v1beta1/)
+- [crictl Documentation](https://kubernetes.io/docs/tasks/debug/debug-cluster/crictl/)
+- [Static Pods](https://kubernetes.io/docs/tasks/configure-pod-container/static-pod/)

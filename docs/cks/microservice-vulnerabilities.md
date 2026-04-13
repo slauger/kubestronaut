@@ -369,8 +369,58 @@ spec:
       image: nginx:latest
 ```
 
+#### RuntimeClass Configuration
+
+RuntimeClass supports scheduling constraints and resource overhead accounting:
+
+```yaml
+apiVersion: node.k8s.io/v1
+kind: RuntimeClass
+metadata:
+  name: gvisor
+handler: runsc
+overhead:
+  podFixed:
+    memory: "120Mi"
+    cpu: "250m"
+scheduling:
+  nodeSelector:
+    sandbox-runtime: "gvisor"
+  tolerations:
+    - key: "sandbox"
+      operator: "Equal"
+      value: "true"
+      effect: "NoSchedule"
+```
+
+| Field | Purpose |
+|---|---|
+| `handler` | Name of the CRI handler (must match container runtime configuration) |
+| `overhead.podFixed` | Additional resource overhead accounted for when scheduling sandboxed pods |
+| `scheduling.nodeSelector` | Ensures pods only run on nodes with the runtime installed |
+| `scheduling.tolerations` | Tolerations automatically applied to pods using this RuntimeClass |
+
+#### Container Runtime Comparison
+
+| Feature | runc (default) | gVisor (runsc) | Kata Containers |
+|---|---|---|---|
+| Isolation | Linux namespaces/cgroups | User-space kernel | Lightweight VM |
+| Syscall handling | Direct to host kernel | Intercepted by Sentry | Full guest kernel |
+| Performance overhead | None | ~5-10% | ~10-20% |
+| Security boundary | Kernel | User-space + seccomp | Hardware (VMM) |
+| Resource overhead | Minimal | ~50-100 MB per sandbox | ~100-300 MB per VM |
+
+```bash
+# Verify which runtime a pod is using
+kubectl get pod <pod-name> -o jsonpath='{.spec.runtimeClassName}'
+
+# Verify gVisor is active inside the container
+kubectl exec <pod-name> -- dmesg 2>&1 | head
+# gVisor shows its own kernel messages instead of Linux kernel
+```
+
 !!! tip "Exam Tip"
-    To use a different container runtime, first create a `RuntimeClass` resource with the appropriate `handler`, then reference it in the pod spec with `runtimeClassName`. The exam may ask you to configure a pod to run in a gVisor sandbox.
+    To use a different container runtime, first create a `RuntimeClass` resource with the appropriate `handler`, then reference it in the pod spec with `runtimeClassName`. The exam may ask you to configure a pod to run in a gVisor sandbox. Use `scheduling.nodeSelector` to ensure pods land on nodes with the runtime installed.
 
 ### Pod-to-Pod Encryption with Cilium
 
@@ -436,6 +486,15 @@ spec:
     mode: STRICT
 ```
 
+#### How mTLS Works
+
+In a service mesh, each pod gets a sidecar proxy (e.g., Envoy) that handles TLS:
+
+1. **Certificate issuance**: The mesh control plane (e.g., Istiod) issues short-lived certificates to each workload
+2. **Handshake**: When Pod A calls Pod B, the sidecar proxies perform a mutual TLS handshake — both sides present and verify certificates
+3. **Certificate rotation**: Certificates are automatically rotated (typically every 24 hours) without application restarts
+4. **Identity verification**: The certificate's SPIFFE identity (e.g., `spiffe://cluster.local/ns/production/sa/frontend`) identifies the workload
+
 #### mTLS Modes
 
 | Mode | Description |
@@ -443,6 +502,28 @@ spec:
 | `STRICT` | Only mTLS traffic is accepted |
 | `PERMISSIVE` | Both plaintext and mTLS traffic are accepted (useful during migration) |
 | `DISABLE` | mTLS is disabled |
+
+```bash
+# Verify mTLS status between services (Istio)
+istioctl x describe pod <pod-name>
+
+# Check proxy certificates
+istioctl proxy-config secret <pod-name> -n <namespace>
+```
+
+#### Choosing Between Cilium Encryption and Service Mesh mTLS
+
+| Aspect | Cilium Encryption | Service Mesh (Istio) |
+|---|---|---|
+| Layer | L3/L4 (network) | L7 (application) |
+| Identity | Cilium endpoint identity | SPIFFE/x.509 certificate |
+| Encryption | WireGuard or IPsec | TLS 1.2/1.3 |
+| L7 policy support | Limited | Full (path, header, method) |
+| Performance impact | Low (~2-5%) | Medium (~5-15%) |
+| Setup complexity | Low (Cilium config) | High (control plane, sidecars) |
+
+!!! tip "Exam Tip"
+    Cilium encryption works at the network layer and requires no application changes. Service mesh mTLS provides L7 visibility and policy but adds sidecar overhead. The exam may ask about either approach — know the trade-offs.
 
 ## Practice Exercises
 

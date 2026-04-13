@@ -357,6 +357,70 @@ spec:
 !!! tip "Exam Tip"
     The metadata endpoint `169.254.169.254` is the standard cloud metadata IP across AWS, GCP, and Azure. Blocking it via NetworkPolicy is the most common exam approach.
 
+### Securing etcd
+
+etcd stores all Kubernetes cluster state including Secrets, ConfigMaps, and RBAC policies. Access to etcd means full control of the cluster.
+
+#### etcd TLS Configuration
+
+etcd should use TLS for both client-to-server and peer-to-peer communication. In kubeadm clusters, this is configured by default.
+
+```yaml
+# /etc/kubernetes/manifests/etcd.yaml (typical kubeadm configuration)
+spec:
+  containers:
+    - command:
+        - etcd
+        - --cert-file=/etc/kubernetes/pki/etcd/server.crt
+        - --key-file=/etc/kubernetes/pki/etcd/server.key
+        - --trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt
+        - --client-cert-auth=true
+        - --peer-cert-file=/etc/kubernetes/pki/etcd/peer.crt
+        - --peer-key-file=/etc/kubernetes/pki/etcd/peer.key
+        - --peer-trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt
+        - --peer-client-cert-auth=true
+        - --listen-client-urls=https://127.0.0.1:2379,https://<node-ip>:2379
+```
+
+Key etcd TLS flags:
+
+| Flag | Purpose |
+|---|---|
+| `--cert-file` / `--key-file` | Server TLS certificate and key |
+| `--trusted-ca-file` | CA certificate for verifying client certificates |
+| `--client-cert-auth=true` | Require client certificate authentication |
+| `--peer-cert-file` / `--peer-key-file` | Peer TLS certificate and key (cluster communication) |
+| `--peer-trusted-ca-file` | CA certificate for verifying peer certificates |
+| `--peer-client-cert-auth=true` | Require peer client certificate authentication |
+
+#### Restricting etcd Network Access
+
+```bash
+# Verify etcd is only listening on expected interfaces
+ss -tlnp | grep 2379
+
+# Verify the API server connects to etcd via TLS
+cat /etc/kubernetes/manifests/kube-apiserver.yaml | grep etcd
+# Should show:
+#   --etcd-servers=https://127.0.0.1:2379
+#   --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt
+#   --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.crt
+#   --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key
+
+# Test etcd connectivity (requires client certificates)
+ETCDCTL_API=3 etcdctl endpoint health \
+  --endpoints=https://127.0.0.1:2379 \
+  --cacert=/etc/kubernetes/pki/etcd/ca.crt \
+  --cert=/etc/kubernetes/pki/etcd/server.crt \
+  --key=/etc/kubernetes/pki/etcd/server.key
+```
+
+!!! warning "Common Pitfall"
+    etcd should never be exposed to the public network. Verify that `--listen-client-urls` only includes `127.0.0.1` and the node's internal IP. If etcd is accessible without client certificates, an attacker can read all cluster Secrets directly.
+
+!!! tip "Exam Tip"
+    The exam may ask you to verify or fix etcd security settings. Check the etcd static pod manifest at `/etc/kubernetes/manifests/etcd.yaml`. Ensure `--client-cert-auth=true` is set and that the API server uses TLS to connect. Use `etcdctl endpoint health` with the correct certificates to verify connectivity.
+
 ### GUI Element Security (Kubernetes Dashboard)
 
 The Kubernetes Dashboard is a web-based UI that, if misconfigured, can provide full cluster access to attackers.
@@ -617,3 +681,5 @@ sha512sum /usr/bin/kubelet
 - [kube-bench GitHub Repository](https://github.com/aquasecurity/kube-bench)
 - [Ingress TLS Configuration](https://kubernetes.io/docs/concepts/services-networking/ingress/#tls)
 - [Restricting Cloud Metadata Access](https://kubernetes.io/docs/tasks/administer-cluster/securing-a-cluster/#restricting-cloud-metadata-api-access)
+- [etcd Security Model](https://etcd.io/docs/v3.5/op-guide/security/)
+- [Operating etcd for Kubernetes](https://kubernetes.io/docs/tasks/administer-cluster/configure-upgrade-etcd/)
