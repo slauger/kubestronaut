@@ -164,4 +164,5 @@ nav:
     - CNPE: cnpe/index.md
     - LFCS: lfcs/index.md
   - Resources: resources/index.md
+  - Labs: labs/index.md
   - Quiz: quiz/index.html
