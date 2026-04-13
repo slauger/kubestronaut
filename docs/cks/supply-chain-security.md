@@ -540,8 +540,23 @@ cosign attach sbom --sbom sbom.spdx.json registry.example.com/myapp:v1.0
 
         Note: The `API_KEY` should be passed at runtime via a Kubernetes Secret, not baked into the image.
 
-??? question "Exercise 3: Configure ImagePolicyWebhook"
-    Configure the API server to use the ImagePolicyWebhook admission controller. The webhook server is available at `https://image-policy.default.svc:8443/validate`. Set `defaultAllow` to `false`.
+??? question "Exercise 3: Configure ImagePolicyWebhook (Hands-On Lab)"
+    A webhook server is running at `https://image-policy.default.svc:8443/validate` that checks container images against an allowlist. Only images from `docker.io/library/` and `registry.k8s.io/` are permitted.
+
+    **Lab Setup** (run on control plane node):
+
+    ```bash
+    bash <(curl -fsSL https://raw.githubusercontent.com/slauger/kubestronaut/main/labs/cks/image-policy-webhook/setup.sh)
+    ```
+
+    **Task:**
+
+    1. Create an `AdmissionConfiguration` at `/etc/kubernetes/admission/admission-config.yaml`
+    2. Create a kubeconfig for the webhook at `/etc/kubernetes/admission/imagepolicy-kubeconfig.yaml` (the CA cert is at `/etc/kubernetes/admission/webhook-ca.crt`)
+    3. Enable the `ImagePolicyWebhook` admission plugin in `kube-apiserver` with `--admission-control-config-file`
+    4. Set `defaultAllow: false` so unknown images are rejected
+    5. Verify: `kubectl run nginx --image=nginx` should **work**
+    6. Verify: `kubectl run evil --image=evil.io/malware` should be **denied**
 
     ??? success "Solution"
         Create the admission configuration:
@@ -561,6 +576,8 @@ cosign attach sbom --sbom sbom.spdx.json registry.example.com/myapp:v1.0
                 defaultAllow: false
         ```
 
+        Create the kubeconfig pointing to the webhook service. Since this is a cluster-internal service, we only need the CA certificate (no client auth required):
+
         ```yaml
         # /etc/kubernetes/admission/imagepolicy-kubeconfig.yaml
         apiVersion: v1
@@ -569,12 +586,10 @@ cosign attach sbom --sbom sbom.spdx.json registry.example.com/myapp:v1.0
           - name: image-policy-server
             cluster:
               server: https://image-policy.default.svc:8443/validate
-              certificate-authority: /etc/kubernetes/admission/server-ca.crt
+              certificate-authority: /etc/kubernetes/admission/webhook-ca.crt
         users:
           - name: api-server
-            user:
-              client-certificate: /etc/kubernetes/admission/client.crt
-              client-key: /etc/kubernetes/admission/client.key
+            user: {}
         contexts:
           - name: default
             context:
@@ -588,6 +603,8 @@ cosign attach sbom --sbom sbom.spdx.json registry.example.com/myapp:v1.0
         ```bash
         sudo vi /etc/kubernetes/manifests/kube-apiserver.yaml
         ```
+
+        Add the admission plugin and ensure the volume mount exists:
 
         ```yaml
         spec:
@@ -611,9 +628,13 @@ cosign attach sbom --sbom sbom.spdx.json registry.example.com/myapp:v1.0
         # Wait for API server to restart
         kubectl get pods -n kube-system -w
 
-        # Test: deploy an image and check if it is validated
-        kubectl run test --image=nginx:latest
-        # Should be allowed or denied based on the webhook server's response
+        # Test: allowed image (docker.io/library/nginx)
+        kubectl run nginx --image=nginx
+        # Expected: pod/nginx created
+
+        # Test: denied image (not in allowlist)
+        kubectl run evil --image=evil.io/malware
+        # Expected: Error from server (Forbidden): image "evil.io/malware" denied
         ```
 
 ??? question "Exercise 4: Sign and Verify a Container Image"
@@ -705,6 +726,136 @@ cosign attach sbom --sbom sbom.spdx.json registry.example.com/myapp:v1.0
         # Expected: denied
         ```
 
+??? question "Exercise 6: Static Analysis of Dockerfiles with Conftest (Hands-On Lab)"
+    Use Conftest with OPA/Rego policies to automatically detect security issues in Dockerfiles.
+
+    **Lab Setup** (run on control plane node):
+
+    ```bash
+    bash <(curl -fsSL https://raw.githubusercontent.com/slauger/kubestronaut/main/labs/cks/conftest-docker/setup.sh)
+    ```
+
+    **Task:**
+
+    1. Run conftest against the insecure Dockerfile with the starter policy (catches `:latest` tag)
+    2. Complete the TODO rules in `/root/conftest-lab/policy/dockerfile.rego`:
+        - Deny `ENV` instructions containing "PASSWORD" or "SECRET"
+        - Deny `EXPOSE 22` (SSH port)
+        - Require a `USER` instruction (non-root)
+        - Deny installation of `curl`, `wget`, or `netcat` in `RUN` commands
+    3. Run conftest against all three Dockerfiles
+    4. `Dockerfile.insecure` should have the most violations, `Dockerfile.secure` should pass
+
+    ??? success "Solution"
+        ```rego
+        # /root/conftest-lab/policy/dockerfile.rego
+        package main
+
+        # Deny use of 'latest' tag
+        deny[msg] {
+          input[i].Cmd == "from"
+          val := input[i].Value[0]
+          endswith(val, ":latest")
+          msg := sprintf("Stage %d: Do not use ':latest' tag: '%s'", [i, val])
+        }
+
+        # Deny ENV with PASSWORD or SECRET
+        deny[msg] {
+          input[i].Cmd == "env"
+          val := input[i].Value[0]
+          contains(upper(val), "PASSWORD")
+          msg := sprintf("ENV contains sensitive key: '%s'", [val])
+        }
+
+        deny[msg] {
+          input[i].Cmd == "env"
+          val := input[i].Value[0]
+          contains(upper(val), "SECRET")
+          msg := sprintf("ENV contains sensitive key: '%s'", [val])
+        }
+
+        # Deny EXPOSE 22
+        deny[msg] {
+          input[i].Cmd == "expose"
+          input[i].Value[j] == "22"
+          msg := "Do not expose SSH port 22"
+        }
+
+        # Require USER instruction
+        deny[msg] {
+          not has_user
+          msg := "Dockerfile must contain a USER instruction"
+        }
+
+        has_user {
+          input[i].Cmd == "user"
+        }
+
+        # Deny dangerous packages in RUN
+        deny[msg] {
+          input[i].Cmd == "run"
+          val := input[i].Value[0]
+          packages := ["curl", "wget", "netcat"]
+          pkg := packages[_]
+          contains(val, pkg)
+          msg := sprintf("Do not install '%s' in production images", [pkg])
+        }
+        ```
+
+        ```bash
+        # Test against insecure Dockerfile (should have many failures)
+        conftest test /root/conftest-lab/dockerfiles/Dockerfile.insecure \
+          --policy /root/conftest-lab/policy
+        # Expected: FAIL for :latest, PASSWORD env, EXPOSE 22, no USER, curl/wget/netcat
+
+        # Test against secure Dockerfile (should pass)
+        conftest test /root/conftest-lab/dockerfiles/Dockerfile.secure \
+          --policy /root/conftest-lab/policy
+        # Expected: 0 failures
+        ```
+
+??? question "Exercise 7: Use Image Digests Instead of Tags (Hands-On Lab)"
+    Mutable image tags like `:latest` are a supply chain risk. Switch deployments to use immutable image digests.
+
+    **Lab Setup** (run on control plane node):
+
+    ```bash
+    bash <(curl -fsSL https://raw.githubusercontent.com/slauger/kubestronaut/main/labs/cks/image-digest/setup.sh)
+    ```
+
+    **Task:**
+
+    1. Find the sha256 digest for the images used by deployments in `digest-lab`
+    2. Update both deployments to use `image@sha256:...` instead of tags
+    3. Verify pods are running with pinned digests
+
+    ??? success "Solution"
+        ```bash
+        # Get the digest from running pods
+        kubectl -n digest-lab get pods -o jsonpath='{range .items[*]}{.spec.containers[0].image}{"\t"}{.status.containerStatuses[0].imageID}{"\n"}{end}'
+
+        # Or use crictl to find digests
+        crictl inspecti nginx:latest 2>/dev/null | jq -r '.status.repoDigests[]'
+        crictl inspecti httpd:2.4 2>/dev/null | jq -r '.status.repoDigests[]'
+
+        # Update deployments with digests (example - your digests will differ!)
+        kubectl -n digest-lab set image deployment/web-latest \
+          nginx=nginx@sha256:<digest-from-above>
+
+        kubectl -n digest-lab set image deployment/api-tagged \
+          httpd=httpd@sha256:<digest-from-above>
+
+        # Verify
+        kubectl -n digest-lab get pods -o jsonpath='{range .items[*]}{.spec.containers[0].image}{"\n"}{end}'
+        # Should show image@sha256:... format
+        ```
+
+        Using digests instead of tags ensures:
+
+        - **Immutability**: The exact same image binary is always pulled
+        - **Supply chain integrity**: A compromised registry cannot substitute a different image under the same tag
+        - **Reproducibility**: Deployments are deterministic across environments
+
 ## Further Reading
 
 - [Trivy Documentation](https://aquasecurity.github.io/trivy/)
@@ -712,4 +863,5 @@ cosign attach sbom --sbom sbom.spdx.json registry.example.com/myapp:v1.0
 - [ImagePolicyWebhook](https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/#imagepolicywebhook)
 - [Dockerfile Best Practices](https://docs.docker.com/develop/develop-images/dockerfile_best-practices/)
 - [OPA Gatekeeper](https://open-policy-agent.github.io/gatekeeper/website/docs/)
+- [Conftest Documentation](https://www.conftest.dev/)
 - [SPDX SBOM Specification](https://spdx.dev/)

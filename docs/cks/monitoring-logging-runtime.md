@@ -782,6 +782,230 @@ kubectl delete clusterrolebinding <binding-name>
         sudo tail /var/log/syslog | grep falco
         ```
 
+??? question "Exercise 6: Write Custom Falco Rules (Hands-On Lab)"
+    Deploy suspicious workloads and write Falco rules to detect malicious activity.
+
+    **Lab Setup** (run on control plane node):
+
+    ```bash
+    bash <(curl -fsSL https://raw.githubusercontent.com/slauger/kubestronaut/main/labs/cks/falco-rules/setup.sh)
+    ```
+
+    **Task:**
+
+    1. Write a custom Falco rule in `/etc/falco/falco_rules.local.yaml` that detects when a shell is spawned inside a container (priority `WARNING`)
+    2. Write a second rule that detects when `/etc/shadow` is read inside a container (priority `ERROR`)
+    3. Restart Falco and trigger both rules
+    4. Verify the alerts in Falco logs
+
+    ??? success "Solution"
+        ```yaml
+        # /etc/falco/falco_rules.local.yaml
+        - rule: Shell Spawned in Container
+          desc: Detect shell execution inside a container
+          condition: >
+            spawned_process and container
+            and proc.name in (sh, bash, dash)
+          output: >
+            Shell spawned in container
+            (container=%container.name image=%container.image.repository
+            user=%user.name command=%proc.cmdline pid=%proc.pid)
+          priority: WARNING
+          tags: [shell, container]
+
+        - rule: Read Sensitive File in Container
+          desc: Detect reading of /etc/shadow in a container
+          condition: >
+            open_read and container
+            and fd.name = /etc/shadow
+          output: >
+            Sensitive file read in container
+            (file=%fd.name container=%container.name
+            image=%container.image.repository user=%user.name
+            command=%proc.cmdline)
+          priority: ERROR
+          tags: [filesystem, container]
+        ```
+
+        ```bash
+        # Validate the rules
+        sudo falco --validate /etc/falco/falco_rules.local.yaml
+
+        # Restart Falco
+        sudo systemctl restart falco
+
+        # Trigger the rules
+        kubectl -n falco-lab exec web-app -- sh -c 'cat /etc/shadow'
+
+        # Check Falco alerts
+        journalctl -u falco --since '2 minutes ago' | grep -E 'Warning|Error'
+        # Should show both "Shell spawned" and "Sensitive file read" alerts
+        ```
+
+??? question "Exercise 7: Enforce Container Immutability (Hands-On Lab)"
+    Harden a web application deployment to prevent filesystem modifications at runtime.
+
+    **Lab Setup** (run on control plane node):
+
+    ```bash
+    bash <(curl -fsSL https://raw.githubusercontent.com/slauger/kubestronaut/main/labs/cks/immutability/setup.sh)
+    ```
+
+    **Task:**
+
+    1. Demonstrate the problem: modify `mutable-web`'s filesystem and install tools
+    2. Create a new Deployment `immutable-web` in namespace `immutability-lab` with:
+        - `readOnlyRootFilesystem: true`
+        - `emptyDir` volumes for `/var/cache/nginx`, `/var/run`, `/tmp`
+        - `runAsNonRoot: true` with `runAsUser: 101` (nginx user)
+    3. Verify the filesystem is read-only (writes should fail)
+    4. Verify nginx still serves traffic correctly
+
+    ??? success "Solution"
+        Demonstrate the vulnerability:
+
+        ```bash
+        kubectl -n immutability-lab exec deploy/mutable-web -- \
+          sh -c 'echo HACKED > /usr/share/nginx/html/index.html'
+        kubectl -n immutability-lab exec deploy/mutable-web -- wget -qO- http://localhost
+        # Shows "HACKED" - filesystem was modified!
+        ```
+
+        Create the immutable deployment:
+
+        ```yaml
+        # immutable-web.yaml
+        apiVersion: apps/v1
+        kind: Deployment
+        metadata:
+          name: immutable-web
+          namespace: immutability-lab
+        spec:
+          replicas: 1
+          selector:
+            matchLabels:
+              app: immutable-web
+          template:
+            metadata:
+              labels:
+                app: immutable-web
+            spec:
+              containers:
+                - name: nginx
+                  image: nginx:alpine
+                  ports:
+                    - containerPort: 80
+                  securityContext:
+                    readOnlyRootFilesystem: true
+                    runAsNonRoot: true
+                    runAsUser: 101
+                    allowPrivilegeEscalation: false
+                  volumeMounts:
+                    - name: cache
+                      mountPath: /var/cache/nginx
+                    - name: run
+                      mountPath: /var/run
+                    - name: tmp
+                      mountPath: /tmp
+              volumes:
+                - name: cache
+                  emptyDir: {}
+                - name: run
+                  emptyDir: {}
+                - name: tmp
+                  emptyDir: {}
+        ```
+
+        ```bash
+        kubectl apply -f immutable-web.yaml
+        kubectl -n immutability-lab rollout status deployment/immutable-web
+
+        # Verify read-only filesystem
+        kubectl -n immutability-lab exec deploy/immutable-web -- \
+          sh -c 'echo test > /usr/share/nginx/html/test.txt'
+        # Expected: Read-only file system error
+
+        # Verify nginx still works
+        kubectl -n immutability-lab exec deploy/immutable-web -- wget -qO- http://localhost
+        # Expected: default nginx welcome page
+
+        # Verify package installation is blocked
+        kubectl -n immutability-lab exec deploy/immutable-web -- apk add nmap
+        # Expected: Read-only file system error
+        ```
+
+??? question "Exercise 8: Analyze Falco Alerts (Hands-On Lab)"
+    Suspicious activity has been detected on the cluster. Analyze the Falco logs to determine what happened, which pods are affected, and what triggered the alerts.
+
+    **Lab Setup** (run on control plane node):
+
+    ```bash
+    bash <(curl -fsSL https://raw.githubusercontent.com/slauger/kubestronaut/main/labs/cks/falco-analysis/setup.sh)
+    ```
+
+    **Task — answer these questions by reading the Falco logs:**
+
+    1. Which pod wrote to `/dev/shm`? What was the filename?
+    2. Which container read `/etc/shadow`?
+    3. Which pod attempted to modify files in `/bin/`? What was the exact command?
+    4. Which pod read the Kubernetes ServiceAccount token?
+    5. List ALL distinct Falco rule names that were triggered
+
+    ??? success "Solution"
+        ```bash
+        # View all recent Falco alerts
+        journalctl -u falco --since '5 minutes ago' --no-pager
+        ```
+
+        **Q1: /dev/shm write**
+
+        ```bash
+        journalctl -u falco --since '5 minutes ago' | grep -i 'shm'
+        ```
+
+        Answer: Pod `data-processor`, container `processor`, wrote file `/dev/shm/hidden_data`. This triggers the Falco rule **"Modify Container Entrypoint"** or **"Write below binary dir"** depending on the Falco version. Writing to `/dev/shm` is suspicious because crypto miners and malware commonly use shared memory for inter-process communication.
+
+        **Q2: /etc/shadow read**
+
+        ```bash
+        journalctl -u falco --since '5 minutes ago' | grep -i 'shadow'
+        ```
+
+        Answer: Pod `compromised`, container `attacker`. Triggers the rule **"Read sensitive file untrusted"** or **"Read sensitive file trusted after startup"**. Reading `/etc/shadow` is a credential harvesting attempt.
+
+        **Q3: /bin/ modification**
+
+        ```bash
+        journalctl -u falco --since '5 minutes ago' | grep -i '/bin/'
+        ```
+
+        Answer: Pod `compromised`, command `cp /bin/ls /bin/backdoor`. Triggers **"Write below binary dir"**. An attacker is planting a backdoor binary.
+
+        **Q4: ServiceAccount token read**
+
+        ```bash
+        journalctl -u falco --since '5 minutes ago' | grep -i 'serviceaccount\|token'
+        ```
+
+        Answer: Pod `compromised`. Reading the SA token allows lateral movement within the cluster (API access with the pod's identity).
+
+        **Q5: Distinct rules triggered**
+
+        ```bash
+        journalctl -u falco --since '5 minutes ago' --no-pager \
+          | grep -oP '(?<=Rule: ).*?(?=\s|$)' | sort -u
+        # Or look for the rule name pattern in the output
+        journalctl -u falco --since '5 minutes ago' --no-pager \
+          | grep -i 'warning\|error\|critical' | sort -u
+        ```
+
+        Typical rules triggered (names may vary by Falco version):
+
+        - `Write below binary dir` (write to /bin/)
+        - `Read sensitive file untrusted` or `Read sensitive file trusted after startup` (/etc/shadow)
+        - `Contact K8S API Server From Container` (SA token read + API access)
+        - `Terminal shell in container` (shell spawned)
+
 ## Further Reading
 
 - [Falco Documentation](https://falco.org/docs/)

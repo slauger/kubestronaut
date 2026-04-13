@@ -735,6 +735,283 @@ Key security considerations:
         # Expected: disabled (or not found)
         ```
 
+??? question "Exercise 6: Restrict a Pod with AppArmor (Hands-On Lab)"
+    Apply an AppArmor profile to a pod that restricts filesystem writes and shell execution.
+
+    **Lab Setup** (run on control plane node):
+
+    ```bash
+    bash <(curl -fsSL https://raw.githubusercontent.com/slauger/kubestronaut/main/labs/cks/apparmor/setup.sh)
+    ```
+
+    **Task:**
+
+    1. Verify the `cks-lab-nginx` AppArmor profile is loaded: `aa-status | grep cks-lab`
+    2. Create a pod `nginx-apparmor` that uses the `cks-lab-nginx` profile
+    3. Verify writes to `/etc/` are **denied**
+    4. Verify shell execution (`bash`) is **denied**
+    5. Verify nginx still serves traffic normally
+
+    ??? success "Solution"
+        ```yaml
+        # nginx-apparmor.yaml
+        apiVersion: v1
+        kind: Pod
+        metadata:
+          name: nginx-apparmor
+        spec:
+          containers:
+            - name: nginx
+              image: nginx:alpine
+              securityContext:
+                appArmorProfile:
+                  type: Localhost
+                  localhostProfile: cks-lab-nginx
+        ```
+
+        ```bash
+        kubectl apply -f nginx-apparmor.yaml
+        kubectl wait --for=condition=Ready pod/nginx-apparmor --timeout=60s
+
+        # Verify writes to /etc are denied
+        kubectl exec nginx-apparmor -- sh -c 'echo test > /etc/test.txt'
+        # Expected: Permission denied
+
+        # Compare with the unrestricted pod
+        kubectl exec nginx-no-apparmor -- sh -c 'echo test > /etc/test.txt'
+        # Expected: succeeds (no AppArmor)
+
+        # Verify shell execution is denied
+        kubectl exec nginx-apparmor -- bash
+        # Expected: Permission denied (or OCI runtime error)
+
+        # Verify nginx still works
+        kubectl exec nginx-apparmor -- wget -qO- http://localhost
+        # Expected: nginx welcome page
+        ```
+
+??? question "Exercise 7: Apply a Custom Seccomp Profile (Hands-On Lab)"
+    Use seccomp profiles to restrict which system calls a container can make.
+
+    **Lab Setup** (run on control plane node):
+
+    ```bash
+    bash <(curl -fsSL https://raw.githubusercontent.com/slauger/kubestronaut/main/labs/cks/seccomp/setup.sh)
+    ```
+
+    **Task:**
+
+    1. Create a pod `seccomp-restricted` that uses the custom `cks-lab-restricted.json` profile via `Localhost` type
+    2. Create a pod `seccomp-runtime` that uses the `RuntimeDefault` seccomp profile
+    3. Compare: which pods can run `unshare --user` (creates a new user namespace)?
+    4. Use the `audit-all.json` profile on a pod and inspect the syslog for audited syscalls
+
+    ??? success "Solution"
+        ```yaml
+        # seccomp-restricted.yaml
+        apiVersion: v1
+        kind: Pod
+        metadata:
+          name: seccomp-restricted
+        spec:
+          securityContext:
+            seccompProfile:
+              type: Localhost
+              localhostProfile: profiles/cks-lab-restricted.json
+          containers:
+            - name: nginx
+              image: nginx:alpine
+        ---
+        # seccomp-runtime.yaml
+        apiVersion: v1
+        kind: Pod
+        metadata:
+          name: seccomp-runtime
+        spec:
+          securityContext:
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: nginx
+              image: nginx:alpine
+        ---
+        # seccomp-audit.yaml
+        apiVersion: v1
+        kind: Pod
+        metadata:
+          name: seccomp-audit
+        spec:
+          securityContext:
+            seccompProfile:
+              type: Localhost
+              localhostProfile: profiles/audit-all.json
+          containers:
+            - name: nginx
+              image: nginx:alpine
+        ```
+
+        ```bash
+        kubectl apply -f seccomp-restricted.yaml
+        kubectl apply -f seccomp-runtime.yaml
+        kubectl apply -f seccomp-audit.yaml
+
+        # Test: unshare (creates user namespace)
+        kubectl exec no-seccomp -- unshare --user id
+        # May succeed (no seccomp restrictions)
+
+        kubectl exec seccomp-restricted -- unshare --user id
+        # Expected: Operation not permitted (unshare syscall blocked)
+
+        kubectl exec seccomp-runtime -- unshare --user id
+        # Expected: Operation not permitted (blocked by RuntimeDefault)
+
+        # Check audit log for syscalls from audit pod
+        kubectl exec seccomp-audit -- wget -qO- http://localhost
+        journalctl -k --since '1 minute ago' | grep 'audit' | tail -20
+        # Shows all syscalls made by the container
+        ```
+
+??? question "Exercise 8: Trace Container Syscalls with strace (Hands-On Lab)"
+    Use `strace` and `crictl` to analyze the syscall behavior of containers and identify suspicious activity.
+
+    **Lab Setup** (run on control plane node):
+
+    ```bash
+    bash <(curl -fsSL https://raw.githubusercontent.com/slauger/kubestronaut/main/labs/cks/strace/setup.sh)
+    ```
+
+    **Task:**
+
+    1. Find the PID of the `web-server` container on the host using `crictl`
+    2. Use `strace` to trace syscalls and generate a summary
+    3. Trace network, file, and process syscalls separately
+    4. Compare the `web-server` and `crypto-miner-sim` pods' syscall patterns
+    5. Based on the analysis, identify which syscalls a seccomp profile should block
+
+    ??? success "Solution"
+        ```bash
+        # Find the web-server container PID
+        CONTAINER_ID=$(crictl ps --name nginx --namespace strace-lab -q | head -1)
+        PID=$(crictl inspect ${CONTAINER_ID} | jq .info.pid)
+        echo "Web server PID: ${PID}"
+
+        # Trace all syscalls with summary (run for a few seconds, then Ctrl+C)
+        timeout 5 strace -f -c -p ${PID} 2>&1 || true
+        # Shows a table of syscall counts, time spent, errors
+
+        # Trace network syscalls only
+        timeout 5 strace -f -e trace=network -p ${PID} 2>&1 | head -20 || true
+
+        # Trace file syscalls only
+        timeout 5 strace -f -e trace=file -p ${PID} 2>&1 | head -20 || true
+
+        # Now trace the suspicious crypto-miner-sim pod
+        MINER_ID=$(crictl ps --name miner --namespace strace-lab -q | head -1)
+        MINER_PID=$(crictl inspect ${MINER_ID} | jq .info.pid)
+
+        timeout 5 strace -f -c -p ${MINER_PID} 2>&1 || true
+        # Notice: many more read() calls to /dev/urandom
+        # and more write() calls than a normal web server
+        ```
+
+        Key differences to look for:
+
+        - **web-server**: Mostly `epoll_wait`, `accept4`, `write` (serving HTTP)
+        - **crypto-miner-sim**: Heavy `read` from `/dev/urandom`, `write` to `/dev/null`, `nanosleep` (simulated mining pattern)
+
+        A seccomp profile to block the suspicious behavior could deny `read` on `/dev/urandom` in bulk, though in practice you would use Falco for detection and seccomp for prevention of specific dangerous syscalls like `ptrace`, `mount`, or `unshare`.
+
+??? question "Exercise 9: Harden the Docker Daemon (Hands-On Lab)"
+    The Docker daemon on this node has been configured insecurely. Identify and fix the security issues.
+
+    **Lab Setup** (run on control plane node):
+
+    ```bash
+    bash <(curl -fsSL https://raw.githubusercontent.com/slauger/kubestronaut/main/labs/cks/docker-hardening/setup.sh)
+    ```
+
+    **Task:**
+
+    1. Identify that the Docker daemon is listening on TCP port 2375 **without TLS** — anyone on the network can control your containers
+    2. Identify that the Docker socket `/var/run/docker.sock` is owned by `root:docker` — any user in the `docker` group has effective root access
+    3. Fix both issues:
+        - Remove the TCP socket listener
+        - Change the socket group to `root`
+    4. Verify: TCP port 2375 is closed, socket is `root:root`
+
+    ??? success "Solution"
+        Identify the issues:
+
+        ```bash
+        # TCP socket exposed (unauthenticated!)
+        ss -tlnp | grep 2375
+        # 0.0.0.0:2375 - anyone can connect
+
+        # Prove the risk: unauthenticated API access
+        curl -s http://localhost:2375/version | jq .
+        # Returns Docker version info without any auth
+
+        # Socket permissions too permissive
+        ls -la /var/run/docker.sock
+        # srw-rw---- 1 root docker - the "docker" group has full access
+        ```
+
+        Fix the TCP socket — find and edit the systemd override:
+
+        ```bash
+        # Find where the TCP flag is configured
+        systemctl cat docker.service | grep tcp
+        # Shows: ExecStart=/usr/bin/dockerd -H fd:// -H tcp://0.0.0.0:2375 ...
+
+        # Edit the override
+        sudo vi /etc/systemd/system/docker.service.d/override.conf
+        ```
+
+        ```ini
+        # Remove -H tcp://0.0.0.0:2375
+        [Service]
+        ExecStart=
+        ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock
+        ```
+
+        Fix the socket permissions:
+
+        ```bash
+        sudo vi /etc/systemd/system/docker.socket.d/override.conf
+        ```
+
+        ```ini
+        [Socket]
+        SocketGroup=root
+        SocketMode=0660
+        ```
+
+        Apply and verify:
+
+        ```bash
+        sudo systemctl daemon-reload
+        sudo systemctl restart docker.socket docker
+
+        # Verify TCP is closed
+        ss -tlnp | grep 2375
+        # Expected: no output (port closed)
+
+        curl http://localhost:2375/version
+        # Expected: connection refused
+
+        # Verify socket permissions
+        ls -la /var/run/docker.sock
+        # Expected: srw-rw---- 1 root root
+        ```
+
+        **Why `root:docker` is dangerous:** The Docker socket grants full control over the Docker daemon. Any user in the `docker` group can mount the host root filesystem and gain root:
+
+        ```bash
+        # This is what an attacker in the "docker" group can do:
+        docker run -v /:/host alpine chroot /host
+        # Instant root shell on the host
+        ```
+
 ## Further Reading
 
 - [Kubernetes AppArmor Documentation](https://kubernetes.io/docs/tutorials/security/apparmor/)
@@ -742,6 +1019,7 @@ Key security considerations:
 - [Pod Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/)
 - [Linux Security Modules](https://kubernetes.io/docs/concepts/security/linux-kernel-security-constraints/)
 - [Restrict a Container's Syscalls with Seccomp](https://kubernetes.io/docs/tutorials/security/seccomp/)
+- [Docker Daemon Attack Surface](https://docs.docker.com/engine/security/#docker-daemon-attack-surface)
 - [Using Sysctls in a Kubernetes Cluster](https://kubernetes.io/docs/tasks/administer-cluster/sysctl-cluster/)
 - [Kubelet Configuration](https://kubernetes.io/docs/reference/config-api/kubelet-config.v1beta1/)
 - [crictl Documentation](https://kubernetes.io/docs/tasks/debug/debug-cluster/crictl/)

@@ -23,6 +23,7 @@ PUBLIC_IP="${PUBLIC_IP:-178.104.160.240}"
 NODE_NAME="${NODE_NAME:-cks01}"
 CERT_SANS="${CERT_SANS:-cks01.lnxlabs.de}"
 KUBESEC_VERSION="${KUBESEC_VERSION:-2.14.0}"
+BOM_VERSION="${BOM_VERSION:-0.7.1}"
 
 ###############################################################################
 # Parse CLI arguments (override defaults)
@@ -181,8 +182,11 @@ systemctl enable containerd
 systemctl restart containerd
 
 ###############################################################################
-# 9. Install podman
+# 9. Install Docker + podman
 ###############################################################################
+
+info "Installing Docker"
+apt-get install -y docker.io
 
 info "Installing podman"
 apt-get install -y podman
@@ -306,6 +310,12 @@ curl -fsSL "https://github.com/controlplaneio/kubesec/releases/download/v${KUBES
   | tar xz -C /usr/local/bin kubesec
 chmod +x /usr/local/bin/kubesec
 
+# --- bom (SBOM generator) ---
+info "Installing bom ${BOM_VERSION}"
+curl -fsSL "https://github.com/kubernetes-sigs/bom/releases/download/v${BOM_VERSION}/bom-${PLATFORM}-linux" \
+  -o /usr/local/bin/bom
+chmod +x /usr/local/bin/bom
+
 ###############################################################################
 # 16. Verification
 ###############################################################################
@@ -322,6 +332,7 @@ echo "--- CKS tool versions ---"
 echo -n "falco:   "; falco --version 2>/dev/null | head -1 || echo "not found"
 echo -n "trivy:   "; trivy --version 2>/dev/null | head -1 || echo "not found"
 echo -n "kubesec: "; kubesec version 2>/dev/null || echo "not found"
+echo -n "bom:     "; bom version 2>/dev/null | head -1 || echo "not found"
 echo -n "cilium:  "; cilium version --client 2>/dev/null | head -1 || echo "not found"
 echo ""
 
