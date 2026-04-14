@@ -41,6 +41,7 @@ subjectAltName = @alt_names
 DNS.1 = ${SERVICE_NAME}
 DNS.2 = ${SERVICE_NAME}.${NAMESPACE}
 DNS.3 = ${FQDN}
+DNS.4 = ${FQDN}.cluster.local
 EOF
 
 openssl req -new -key "${TMPDIR}/server.key" \
