@@ -271,15 +271,13 @@ kubectl wait --for=condition=Ready node/"${NODE_NAME}" --timeout=300s
 # 15. Cluster DNS forwarding (host → CoreDNS)
 ###############################################################################
 
-info "Configuring host DNS to forward *.svc queries to CoreDNS"
+info "Configuring host DNS to forward *.cluster.local queries to CoreDNS"
 COREDNS_IP=$(kubectl get svc kube-dns -n kube-system -o jsonpath='{.spec.clusterIP}')
-mkdir -p /etc/systemd/resolved.conf.d
-cat > /etc/systemd/resolved.conf.d/cluster-dns.conf <<EOF
-[Resolve]
-DNS=${COREDNS_IP}
-Domains=cluster.local ~cluster.local
-EOF
-systemctl restart systemd-resolved
+ip link add kube-dns type dummy
+ip link set kube-dns up
+resolvectl dns kube-dns "${COREDNS_IP}"
+resolvectl domain kube-dns "~cluster.local"
+resolvectl mdns kube-dns no
 
 ###############################################################################
 # 16. CKS Tools
