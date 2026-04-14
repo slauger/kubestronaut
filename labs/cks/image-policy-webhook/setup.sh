@@ -87,17 +87,17 @@ data:
         def do_POST(self):
             body = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
 
-            # Handle ImageReview API
-            image_list = body.get("spec", {}).get("images", [])
+            # Handle ImageReview API (spec.containers[].image)
+            containers = body.get("spec", {}).get("containers", [])
+            images = [c.get("image", "") for c in containers if c.get("image")]
 
             allowed = True
             reason = ""
-            if image_list:
-                for img in image_list:
-                    if not is_allowed(img):
-                        allowed = False
-                        reason = f"image {img} is not from an allowed registry"
-                        break
+            for img in images:
+                if not is_allowed(img):
+                    allowed = False
+                    reason = f"image {img} is not from an allowed registry"
+                    break
 
             review = {
                 "apiVersion": "imagepolicy.k8s.io/v1alpha1",
