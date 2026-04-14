@@ -14,9 +14,8 @@ if ! command -v conftest &>/dev/null; then
   PLATFORM=$(uname -m)
   case "${PLATFORM}" in
     aarch64) PLATFORM="arm64" ;;
-    x86_64)  PLATFORM="amd64" ;;
   esac
-  curl -fsSL "https://github.com/open-policy-agent/conftest/releases/download/v0.57.0/conftest_0.57.0_Linux_${PLATFORM}.tar.gz" \
+  curl -fsSL "https://github.com/open-policy-agent/conftest/releases/download/v0.68.0/conftest_0.68.0_Linux_${PLATFORM}.tar.gz" \
     | tar xz -C /usr/local/bin conftest
   chmod +x /usr/local/bin/conftest
 fi
