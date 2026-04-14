@@ -268,7 +268,21 @@ echo "Waiting for node to be Ready..."
 kubectl wait --for=condition=Ready node/"${NODE_NAME}" --timeout=300s
 
 ###############################################################################
-# 15. CKS Tools
+# 15. Cluster DNS forwarding (host → CoreDNS)
+###############################################################################
+
+info "Configuring host DNS to forward *.svc queries to CoreDNS"
+COREDNS_IP=$(kubectl get svc kube-dns -n kube-system -o jsonpath='{.spec.clusterIP}')
+mkdir -p /etc/systemd/resolved.conf.d
+cat > /etc/systemd/resolved.conf.d/cluster-dns.conf <<EOF
+[Resolve]
+DNS=${COREDNS_IP}
+Domains=~svc
+EOF
+systemctl restart systemd-resolved
+
+###############################################################################
+# 16. CKS Tools
 ###############################################################################
 
 # --- AppArmor (keep installed, CKS-relevant!) ---
@@ -317,7 +331,7 @@ curl -fsSL "https://github.com/kubernetes-sigs/bom/releases/download/v${BOM_VERS
 chmod +x /usr/local/bin/bom
 
 ###############################################################################
-# 16. Verification
+# 17. Verification
 ###############################################################################
 
 info "Verifying installation"

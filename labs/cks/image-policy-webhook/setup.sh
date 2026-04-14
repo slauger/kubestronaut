@@ -85,14 +85,8 @@ data:
     class Handler(http.server.BaseHTTPRequestHandler):
         def do_POST(self):
             body = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
-            images = []
-            if "spec" in body:
-                images = body["spec"].get("containers", [])
-            elif "images" in body.get("spec", {}):
-                images = body["spec"]["images"]
 
             # Handle ImageReview API
-            containers = body.get("spec", {}).get("containers", [])
             image_list = body.get("spec", {}).get("images", [])
 
             allowed = True
@@ -192,7 +186,7 @@ echo ""
 echo "=== Setup Complete ==="
 echo ""
 echo "The ImageReview webhook server is running at:"
-echo "  https://image-policy.default.svc:8443/validate"
+echo "  https://${FQDN}:8443/validate"
 echo ""
 echo "Allowed image prefixes:"
 echo "  - docker.io/library/ (including short names like 'nginx')"
@@ -204,7 +198,8 @@ echo ""
 echo "Your task:"
 echo "  1. Create an AdmissionConfiguration at ${CERT_DIR}/admission-config.yaml"
 echo "  2. Create a kubeconfig for the webhook at ${CERT_DIR}/imagepolicy-kubeconfig.yaml"
-echo "  3. Enable ImagePolicyWebhook in the kube-apiserver"
-echo "  4. Set defaultAllow: false"
+echo "     (CA cert: ${CERT_DIR}/webhook-ca.crt, server: https://${FQDN}:8443/validate)"
+echo "  3. Enable ImagePolicyWebhook in the kube-apiserver with --admission-control-config-file"
+echo "  4. Set defaultAllow: false so unknown images are rejected"
 echo "  5. Verify: kubectl run nginx --image=nginx should WORK"
 echo "  6. Verify: kubectl run evil --image=evil.io/malware should be DENIED"
