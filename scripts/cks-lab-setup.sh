@@ -277,7 +277,7 @@ mkdir -p /etc/systemd/resolved.conf.d
 cat > /etc/systemd/resolved.conf.d/cluster-dns.conf <<EOF
 [Resolve]
 DNS=${COREDNS_IP}
-Domains=~svc
+Domains=cluster.local ~cluster.local
 EOF
 systemctl restart systemd-resolved
 
