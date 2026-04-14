@@ -75,9 +75,8 @@ data:
   server.py: |
     import json, ssl, http.server
 
-    ALLOWED_PREFIXES = ["docker.io/library/", "registry.k8s.io/"]
+    ALLOWED_PREFIXES = ["docker.io/", "registry.k8s.io/"]
 
-    # Images without a registry prefix (e.g. "nginx:latest") are from docker.io/library/
     def is_allowed(image):
         if "/" not in image.split(":")[0]:
             return True
@@ -190,7 +189,7 @@ echo "The ImageReview webhook server is running at:"
 echo "  https://${FQDN}:8443/validate"
 echo ""
 echo "Allowed image prefixes:"
-echo "  - docker.io/library/ (including short names like 'nginx')"
+echo "  - docker.io/"
 echo "  - registry.k8s.io/"
 echo ""
 echo "CA certificate installed at:"
