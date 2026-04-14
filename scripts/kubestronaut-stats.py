@@ -12,6 +12,12 @@ import sys
 import urllib.request
 
 URL = "https://www.cncf.io/training/kubestronaut/"
+GOLDEN_URL = "https://www.cncf.io/training/kubestronaut/?_sfm_lf_person_golden=1"
+
+COUNTRY_SELECT_RE = re.compile(
+    r'<select[^>]*name="_sft_lf-country[^"]*"[^>]*>(.*?)</select>',
+    re.DOTALL,
+)
 
 OPTION_RE = re.compile(
     r'<option[^>]*'
@@ -29,8 +35,11 @@ def fetch_html(url: str) -> str:
 
 
 def parse_options(page_html: str) -> list[dict]:
+    select_match = COUNTRY_SELECT_RE.search(page_html)
+    search_html = select_match.group(1) if select_match else page_html
+
     entries = []
-    for m in OPTION_RE.finditer(page_html):
+    for m in OPTION_RE.finditer(search_html):
         label = html.unescape(m.group("label")).strip()
         # Strip leading whitespace and trailing count like "(123)" or "(1,583)"
         label = re.sub(r"\s*\([\d,]+\)\s*$", "", label).strip()
@@ -43,13 +52,14 @@ def parse_options(page_html: str) -> list[dict]:
     return entries
 
 
-def print_text(entries: list[dict]) -> None:
+def print_text(entries: list[dict], golden: bool = False) -> None:
     regions = [e for e in entries if e["depth"] == 0]
     countries = [e for e in entries if e["depth"] == 1]
 
     global_total = sum(r["count"] for r in regions)
 
-    print(f"{'Kubestronauts Worldwide':=^60}")
+    title = "Golden Kubestronauts Worldwide" if golden else "Kubestronauts Worldwide"
+    print(f"{title:=^60}")
     print(f"\nTotal: {global_total}\n")
 
     print(f"{'By Region':->60}")
@@ -61,13 +71,14 @@ def print_text(entries: list[dict]) -> None:
         print(f"  {c['label']:<40} {c['count']:>5}")
 
 
-def print_json(entries: list[dict]) -> None:
+def print_json(entries: list[dict], golden: bool = False) -> None:
     regions = [e for e in entries if e["depth"] == 0]
     countries = [e for e in entries if e["depth"] == 1]
 
     global_total = sum(r["count"] for r in regions)
 
     output = {
+        "type": "golden" if golden else "all",
         "total": global_total,
         "regions": {r["label"]: r["count"] for r in sorted(regions, key=lambda x: x["count"], reverse=True)},
         "countries": {c["label"]: c["count"] for c in sorted(countries, key=lambda x: x["count"], reverse=True)},
@@ -81,7 +92,10 @@ def main() -> None:
     if "--json" in sys.argv:
         fmt = "json"
 
-    page_html = fetch_html(URL)
+    golden = "--golden" in sys.argv
+    url = GOLDEN_URL if golden else URL
+
+    page_html = fetch_html(url)
     entries = parse_options(page_html)
 
     if not entries:
@@ -89,9 +103,9 @@ def main() -> None:
         sys.exit(1)
 
     if fmt == "json":
-        print_json(entries)
+        print_json(entries, golden=golden)
     else:
-        print_text(entries)
+        print_text(entries, golden=golden)
 
 
 if __name__ == "__main__":
